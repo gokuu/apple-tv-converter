@@ -15,10 +15,11 @@ Media converter for AppleTV.
 apple-tv-converter option [option] [option]...
 
 options:
-    - --no-subtitles  # Skips subtitles extraction and addition
-    - --no-metadata   # Skips adding metadata to the converted file 
-    - --no-cleanup    # Skips deleting the source files
-    - Anything not starting with -- is considered a file to convert
+    --no-subtitles  # Skips subtitles extraction and addition
+    --no-metadata   # Skips adding metadata to the converted file 
+    --no-cleanup    # Skips deleting the source files
+    
+    Anything not starting with -- is considered a file to convert
 ```
 
 # TODO
