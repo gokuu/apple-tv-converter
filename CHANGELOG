@@ -1,5 +1,6 @@
 v0.0.2
 ------
+* Added command line utility to convert media
 * Do not clean up all subtitles in the folder after processing one file, ensure that only the current file's are deleted
 
 v0.0.1
