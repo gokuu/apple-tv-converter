@@ -1,4 +1,7 @@
-apple-tv-converter
-==================
+episode_converter
+=================
 
-Convert media to a format playable on Apple TV
+Media converter for AppleTV.
+
+- Uses Handbrake's Command Line Interface for encoding (http://handbrake.fr)
+- Uses Atomic Parsley for setting the iTunes metadata tags (http://atomicparsley.sourceforge.net/)
