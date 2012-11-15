@@ -54,7 +54,7 @@ module AppleTvConverter
       printf "*** Cleaning up"
       begin
         FileUtils.rm(media.original_filename) unless media.original_filename == media.converted_filename
-        FileUtils.rm_r list_files(File.join(File.dirname(media.original_filename), '*.srt'))
+        FileUtils.rm_r list_files(media.original_filename.gsub(File.extname(media.original_filename), '*.srt'))
         puts " [DONE]"
       rescue
         puts " [ERROR]"

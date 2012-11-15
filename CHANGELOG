@@ -1,3 +1,7 @@
+v0.0.2
+------
+* Do not clean up all subtitles in the folder after processing one file, ensure that only the current file's are deleted
+
 v0.0.1
 ------
 * Mac OSX implementation
