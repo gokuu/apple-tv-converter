@@ -11,5 +11,6 @@ Media converter for AppleTV.
 
 # TODO
 
+- Windows implementation
 - Tests!
 - Create a Mac OSX executable for running the script
