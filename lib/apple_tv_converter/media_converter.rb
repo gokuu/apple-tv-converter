@@ -35,25 +35,5 @@ module AppleTvConverter
         @adapter.clean_up(media) unless @options[:skip_cleanup] == true
       end
     end
-
-    private
-
-      # HELPERS
-      def process_all_medias(medias)
-        medias.each_with_index do |media, index|
-          puts '*' * 80
-          puts "* [#{(index + 1).to_s.rjust(medias.length.to_s.length, ' ')}/#{medias.length}] #{File.basename(media.original_filename)}"
-          
-          process_media media
-        end
-      end
-
-      def process_file(file)
-        puts '*' * 80
-        puts "* #{file}"
-        
-        media = parse_filename(file)
-        process_media media
-      end
   end
 end
