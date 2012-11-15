@@ -1,0 +1,5 @@
+#!/usr/bin/ruby
+
+require 'apple_tv_converter'
+
+command_line = AppleTvConverter::CommandLine.new(*ARGV)

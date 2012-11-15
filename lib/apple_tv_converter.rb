@@ -12,6 +12,7 @@ require 'language_list'
 
 require 'apple_tv_converter/version'
 require 'apple_tv_converter/io_patch'
+require 'apple_tv_converter/command_line'
 require 'apple_tv_converter/media_converter'
 require 'apple_tv_converter/media'
 require 'apple_tv_converter/media_converter_adapter'

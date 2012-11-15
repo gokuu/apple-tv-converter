@@ -5,7 +5,13 @@ module AppleTvConverter
     def is_windows? ; RUBY_PLATFORM =~/.*?mingw.*?/i ; end
     def is_macosx? ; RUBY_PLATFORM =~/.*?darwin.*?/i ; end
 
-    def initialize
+    def initialize(options = {})
+      @options = {
+        :skip_subtitles => false,
+        :skip_metadata => false,
+        :skip_cleanup => false
+      }.merge(options)
+
       @adapter = is_windows? ? AppleTvConverter::MediaConverterWindowsAdapter.new : AppleTvConverter::MediaConverterMacAdapter.new
     end
 
@@ -15,14 +21,14 @@ module AppleTvConverter
       AppleTvConverter.logger.debug "* Audio codec: #{media.ffmpeg_data.audio_codec}"
       AppleTvConverter.logger.debug "* Container: #{media.ffmpeg_data.container}" rescue nil
 
-      extract_subtitles(media) if media.is_mkv?
+      extract_subtitles(media) if media.is_mkv? && @options[:skip_subtitles] != true
 
       if @adapter.transcode(media)
-        @adapter.add_subtitles media
-        @adapter.tag media
+        @adapter.add_subtitles(media) unless @options[:skip_subtitles] == true
+        @adapter.tag(media) unless @options[:skip_metadata] == true
 
-        # add_to_itunes media
-        @adapter.clean_up media
+        # @adapter.add_to_itunes media
+        @adapter.clean_up(media) unless @options[:skip_cleanup] == true
       end
     end
 

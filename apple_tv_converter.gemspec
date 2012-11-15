@@ -19,5 +19,6 @@ Gem::Specification.new do |s|
   s.add_dependency('streamio-ffmpeg', '~> 0.9.0')
   s.add_dependency('language_list', '~> 0.0.3')
   
-  s.files        = Dir.glob("lib/**/*") + %w(README.md LICENSE CHANGELOG)
+  s.files       = Dir.glob("lib/**/*") + %w(README.md LICENSE CHANGELOG)
+  s.executables = %w(apple-tv-converter)
 end
