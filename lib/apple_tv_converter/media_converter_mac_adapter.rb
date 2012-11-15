@@ -1,9 +1,9 @@
 module AppleTvConverter
   class MediaConverterMacAdapter < MediaConverterAdapter
     def add_subtitles(media)
-      puts "*** Adding subtitles"
+      puts "* Adding subtitles"
 
-      printf "* Removing any previous subtitles"
+      printf "  * Removing any previous subtitles"
 
       command_line = %Q[./SublerCLI -remove -dest "#{media.converted_filename}"]
 
@@ -31,13 +31,13 @@ module AppleTvConverter
           AppleTvConverter.logger.debug "Executing:"
           AppleTvConverter.logger.debug command_line
 
-          printf "* Adding #{language.name} subtitles"
+          printf "  * Adding #{language.name} subtitles"
           output = Open3.popen3(command_line) { |stdin, stdout, stderr, wait_thr| stdout.read }
 
           puts output.strip.empty? ? " [DONE]" : " [ERROR]"
         end
       else
-        puts "* No new subtitles found"
+        puts "  * No new subtitles found"
       end
     end
 
@@ -53,7 +53,7 @@ module AppleTvConverter
       AppleTvConverter.logger.debug "Executing:"
       AppleTvConverter.logger.debug command_line
 
-      printf "*** Tagging"
+      printf "* Tagging"
 
       output = Open3.popen3(command_line) { |stdin, stdout, stderr, wait_thr| stdout.read }
 
@@ -63,7 +63,7 @@ module AppleTvConverter
     end
 
     def add_to_itunes(media)
-      printf "*** Adding to iTunes"
+      printf "  * Adding to iTunes"
 
       command_line = [
         "ln -s",

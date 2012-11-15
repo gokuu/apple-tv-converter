@@ -16,10 +16,14 @@ module AppleTvConverter
     end
 
     def process_media(media)
-      AppleTvConverter.logger.debug "**** #{File.basename(media.original_filename)}"
+      AppleTvConverter.logger.debug "  ** #{File.basename(media.original_filename)}"
       AppleTvConverter.logger.debug "* Video codec: #{media.ffmpeg_data.video_codec}"
       AppleTvConverter.logger.debug "* Audio codec: #{media.ffmpeg_data.audio_codec}"
       AppleTvConverter.logger.debug "* Container: #{media.ffmpeg_data.container}" rescue nil
+
+      puts "*" * (4 + File.basename(media.original_filename).length)
+      puts "* #{File.basename(media.original_filename)} *"
+      puts "*" * (4 + File.basename(media.original_filename).length)
 
       extract_subtitles(media) if media.is_mkv? && @options[:skip_subtitles] != true
 

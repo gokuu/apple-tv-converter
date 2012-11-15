@@ -1,16 +1,16 @@
 module AppleTvConverter
   class MediaConverterAdapter
     def extract_subtitles(media)
-      printf "*** Extracting subtitles"
+      printf "* Extracting subtitles"
       media.mkv_data.extract_subtitles(File.dirname(media.original_filename)) do |progress|
-        printf "\r* Progress: #{progress}%%"
+        printf "\r  * Progress: #{progress}%%"
       end
-      puts "\r* Progress: [DONE]"
+      puts "\r  * Progress: [DONE]"
     end
 
     def transcode(media)
       if convert?(media)
-        puts "*** Encoding"
+        puts "* Encoding"
 
         options = {
           :video_codec => convert_video?(media) ? 'mpeg4' : 'copy',
@@ -20,10 +20,13 @@ module AppleTvConverter
         options[:custom] = "-qscale 1" if convert_video?(media)
 
         transcoded = media.ffmpeg_data.transcode(media.converted_filename, options) do |progress|
-          printf %Q[\r* Progress: #{(progress * 100).round(2)}%%]
+          printf "\r" + (" " * 40)
+          printf %Q[\r* Encoding Progress: #{(progress * 100).round(2)}%%]
         end
 
-        status transcoded.valid?
+        status = transcoded.valid?
+
+        printf "\r" + (" " * 40)
 
         if status
           puts "\r* Encoding: [DONE]#{' ' * 20}"
@@ -31,7 +34,7 @@ module AppleTvConverter
           puts "\r* Encoding: [ERROR]#{' ' * 20}"
         end
       else
-        puts "*** Encoding: [UNNECESSARY]"
+        puts "* Encoding: [UNNECESSARY]"
         status = true
       end
 
@@ -51,7 +54,7 @@ module AppleTvConverter
     end
 
     def clean_up(media)
-      printf "*** Cleaning up"
+      printf "* Cleaning up"
       begin
         FileUtils.rm(media.original_filename) unless media.original_filename == media.converted_filename
         FileUtils.rm_r list_files(media.original_filename.gsub(File.extname(media.original_filename), '*.srt'))
