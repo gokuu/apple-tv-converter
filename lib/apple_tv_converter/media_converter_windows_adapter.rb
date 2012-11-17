@@ -30,6 +30,17 @@ module AppleTvConverter
       `#{command_line}`
     end
 
+    protected
+
+      def get_transcode_options(media)
+        options = {
+          :video_codec => convert_video?(media) ? 'mpeg4' : 'copy',
+          :audio_codec => convert_audio?(media) ? 'libvo_aacenc' : 'copy'
+        }
+
+        return options
+      end
+
     private
 
       def is_windows_32bit?

@@ -15,7 +15,7 @@ module AppleTvConverter
       puts output.strip.empty? ? " [DONE]" : (output.strip == 'Error: (null)' ? " [NONE FOUND]" : " [ERROR]")
 
       if has_subtitles?(media)
-        list_files(File.join(File.dirname(media.original_filename), '*.srt')).map do |subtitle_filename|
+        list_files(media.original_filename.gsub(File.extname(media.original_filename), '*.srt')).map do |subtitle_filename|
           subtitle_filename =~ /(\w{3})\.srt$/
           language_code = $1 || 'eng'
 
@@ -83,5 +83,16 @@ module AppleTvConverter
     def list_files(ls)
       `ls -1 #{ls.gsub(/\s/, '\ ').gsub(/\[/, '\[').gsub(/\]/, '\]')} 2>/dev/null`.split("\n")
     end
+
+    protected
+
+      def get_transcode_options(media)
+        options = {
+          :video_codec => convert_video?(media) ? 'mpeg4' : 'copy',
+          :audio_codec => convert_audio?(media) ? 'libfaac' : 'copy'
+        }
+
+        return options
+      end
   end
 end

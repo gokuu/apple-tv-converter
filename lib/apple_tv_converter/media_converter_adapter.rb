@@ -12,12 +12,9 @@ module AppleTvConverter
       if convert?(media)
         puts "* Encoding"
 
-        options = {
-          :video_codec => convert_video?(media) ? 'mpeg4' : 'copy',
-          :audio_codec => convert_audio?(media) ? 'libfaac' : 'copy'
-        }
-
-        options[:custom] = "-qscale 1" if convert_video?(media)
+        options = get_transcode_options(media)
+        # Better video transcoding quality
+        options[:custom] = "-mbd rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -g 300 -pass 1" if convert_video?(media)
 
         transcoded = media.ffmpeg_data.transcode(media.converted_filename, options) do |progress|
           printf "\r" + (" " * 40)
@@ -84,6 +81,10 @@ module AppleTvConverter
 
       def has_subtitles?(media)
         list_files(File.join(File.dirname(media.original_filename), '*.srt')).any?
+      end
+
+      def get_transcode_options(media)
+        raise NotImplementedYetException
       end
 
   end
