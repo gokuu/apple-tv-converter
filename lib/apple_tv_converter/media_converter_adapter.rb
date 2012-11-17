@@ -72,7 +72,7 @@ module AppleTvConverter
       end
 
       def convert_video?(media)
-        return media.ffmpeg_data.video_codec !~ /.*(?:mpeg4).*/i
+        return media.ffmpeg_data.video_codec !~ /.*(?:h264|mpeg4).*/i || media.ffmpeg_data.video_codec =~ /.*(?:xvid|divx).*/i
       end
 
       def convert?(media)
