@@ -25,7 +25,7 @@ module AppleTvConverter
       puts "* #{File.basename(media.original_filename)} *"
       puts "*" * (4 + File.basename(media.original_filename).length)
 
-      extract_subtitles(media) if media.is_mkv? && @options[:skip_subtitles] != true
+      @adapter.extract_subtitles(media) if media.is_mkv? && @options[:skip_subtitles] != true
 
       if @adapter.transcode(media)
         @adapter.add_subtitles(media) unless @options[:skip_subtitles] == true
