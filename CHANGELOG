@@ -1,3 +1,9 @@
+v0.1.0
+------
+* Added support for supplying directories to command line utility
+* Better quality encoding of audio and video
+* Create movies name .mp4 instead of .m4v
+
 v0.0.2
 ------
 * Added command line utility to convert media
