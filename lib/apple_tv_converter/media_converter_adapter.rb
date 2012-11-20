@@ -25,7 +25,7 @@ module AppleTvConverter
 
         transcoded = media.ffmpeg_data.transcode(media.converted_filename, options) do |progress|
           printf "\r" + (" " * 40)
-          printf %Q[\r* Encoding Progress: #{(progress * 100).round(2)}%%]
+          printf %Q[\r  * Progress: #{(progress * 100).round(2)}%%]
         end
 
         status = transcoded.valid?
@@ -33,9 +33,9 @@ module AppleTvConverter
         printf "\r" + (" " * 40)
 
         if status
-          puts "\r* Encoding: [DONE]#{' ' * 20}"
+          puts "\r  * Progress: [DONE]#{' ' * 20}"
         else
-          puts "\r* Encoding: [ERROR]#{' ' * 20}"
+          puts "\r  * Progress: [ERROR]#{' ' * 20}"
         end
       else
         puts "* Encoding: [UNNECESSARY]"
