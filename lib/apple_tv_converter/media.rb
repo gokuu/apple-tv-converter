@@ -6,11 +6,11 @@ module AppleTvConverter
     def original_filename=(value)
       @original_filename = value
 
-      if @original_filename =~ /.*?\.m4v$/
-        if File.exists?(@original_filename.gsub(/\.m4v/, '.avi'))
-          @original_filename = @original_filename.gsub(/\.m4v/, '.avi')
-        elsif File.exists?(@original_filename.gsub(/\.m4v/, '.mkv'))
-          @original_filename = @original_filename.gsub(/\.m4v/, '.mkv')
+      if @original_filename =~ /.*?\.mp4$/
+        if File.exists?(@original_filename.gsub(/\.mp4/, '.avi'))
+          @original_filename = @original_filename.gsub(/\.mp4/, '.avi')
+        elsif File.exists?(@original_filename.gsub(/\.mp4/, '.mkv'))
+          @original_filename = @original_filename.gsub(/\.mp4/, '.mkv')
         end
       end
     end
@@ -20,11 +20,11 @@ module AppleTvConverter
     end
 
     def converted_filename
-      @converted_filename ||= self.original_filename.gsub(/\.(mkv|avi)/, '.m4v')
+      @converted_filename ||= self.original_filename.gsub(/\.(mkv|avi)/, '.mp4')
     end
 
     def converted_filename_with_subtitles
-      @converted_filename_with_subtitles ||= self.original_filename.gsub(/\.(mkv|avi|mp4)/, '_subtitled.m4v')
+      @converted_filename_with_subtitles ||= self.original_filename.gsub(/\.(mkv|avi|m4v)/, '_subtitled.mp4')
     end
 
     def ffmpeg_data
@@ -48,7 +48,7 @@ module AppleTvConverter
     end
 
     def is_mp4?
-      ffmpeg_data.container =~ /mp4/ rescue File.extname(original_filename) =~ /\.(mp4|m4v)$/
+      ffmpeg_data.container =~ /mp4/ rescue File.extname(original_filename) =~ /\.(m4v|mp4)$/
     end
 
     def is_valid?
