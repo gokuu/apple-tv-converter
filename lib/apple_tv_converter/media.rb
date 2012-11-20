@@ -1,7 +1,7 @@
 module AppleTvConverter
   class Media
     attr_accessor :show, :season, :number, :genre
-    attr_reader :original_filename, :quality
+    attr_reader :original_filename
 
     def original_filename=(value)
       @original_filename = value
@@ -29,6 +29,20 @@ module AppleTvConverter
 
     def ffmpeg_data
       @ffmpeg_data ||= FFMPEG::Movie.new(original_filename)
+    end
+
+    def quality
+      if !@quality
+        @quality = '1080p' if ffmpeg_data.height == 1080 || ffmpeg_data.width == 1920
+        @quality = '720p' if ffmpeg_data.height == 720 || ffmpeg_data.width == 1280
+        @quality = 'Xvid' if !@quality
+      end
+
+      @quality
+    end
+
+    def quality=(value)
+      @quality = value
     end
 
     def mkv_data
