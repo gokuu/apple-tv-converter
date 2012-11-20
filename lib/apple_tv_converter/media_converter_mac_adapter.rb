@@ -3,16 +3,17 @@ module AppleTvConverter
     def add_subtitles(media)
       puts "* Adding subtitles"
 
-      printf "  * Removing any previous subtitles"
+      # No need remove any subtitles, no video will have subtitles!
+      # printf "  * Removing any previous subtitles"
 
-      command_line = %Q[./SublerCLI -remove -dest "#{media.converted_filename}"]
+      # command_line = %Q[./SublerCLI -remove -dest "#{media.converted_filename}"]
 
-      AppleTvConverter.logger.debug "Executing:"
-      AppleTvConverter.logger.debug command_line
+      # AppleTvConverter.logger.debug "Executing:"
+      # AppleTvConverter.logger.debug command_line
 
-      output = Open3.popen3(command_line) { |stdin, stdout, stderr, wait_thr| stdout.read }
+      # output = Open3.popen3(command_line) { |stdin, stdout, stderr, wait_thr| stdout.read }
 
-      puts output.strip.empty? ? " [DONE]" : (output.strip == 'Error: (null)' ? " [NONE FOUND]" : " [ERROR]")
+      # puts output.strip.empty? ? " [DONE]" : (output.strip == 'Error: (null)' ? " [NONE FOUND]" : " [ERROR]")
 
       if has_subtitles?(media)
         list_files(media.original_filename.gsub(File.extname(media.original_filename), '*.srt')).map do |subtitle_filename|
@@ -37,7 +38,7 @@ module AppleTvConverter
           puts output.strip.empty? ? " [DONE]" : " [ERROR]"
         end
       else
-        puts "  * No new subtitles found"
+        puts "  * No subtitles found"
       end
     end
 
