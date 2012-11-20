@@ -35,18 +35,33 @@ module AppleTvConverter
 
         raise ArgumentError.new("No arguments supplied") unless arguments.any?
 
+        is_dir = false
+
         arguments.each do |argument|
           if argument.strip =~ /^--/
             # Can be a switch, starting with --
             if argument.strip =~ /^--no-subtitles$/i
-              data[:skip_subtitles] = true 
+              data[:skip_subtitles] = true
             elsif argument.strip =~ /^--no-metadata$/i
-              data[:skip_metadata] = true 
+              data[:skip_metadata] = true
             elsif argument.strip =~ /^--no-cleanup$/i
-              data[:skip_cleanup] = true 
+              data[:skip_cleanup] = true
+            elsif argument.strip =~ /^--dir$/i
+              is_dir = true
             else
               raise ArgumentError.new("Unknown switch: #{argument}")
             end
+          elsif is_dir
+            # Previous argument identified a directory
+            raise ArgumentError.new("Path not found: #{argument}") unless File.exists?(argument)
+            raise ArgumentError.new("Path is not a directory: #{argument}") unless File.directory?(argument)
+
+            # Recursively load all movie files
+            data[:media].push *(Dir[File.join(argument, '**', '*.{mp4,avi,mkv,m4v}')].map do |file|
+              parse_filename(file)
+            end.compact)
+
+            is_dir = false
           else
             # Or a file
             raise ArgumentError.new("File not found: #{argument}") unless File.exists?(argument)
