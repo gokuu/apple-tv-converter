@@ -44,10 +44,10 @@ module AppleTvConverter
 
     def tag(media)
       metadata = ''
-      metadata << %Q[{Name: #{media.show} S#{media.season.to_s.rjust(2, '0')}E#{media.number.to_s.rjust(2, '0')}}] if media.is_tv_show_episode?     
+      metadata << %Q[{Name: #{media.show} S#{media.season.to_s.rjust(2, '0')}E#{media.number.to_s.rjust(2, '0')}}] if media.is_tv_show_episode?
       metadata << %Q[{Name: #{media.show}}] if media.is_movie?
       metadata << %Q[{Genre: #{media.show}}{TV Show: #{media.show}}{TV Season: #{media.season}}{TV Episode #: #{media.number}}] if media.is_tv_show_episode?
-      metadata << %Q[{Genre: #{media.quality} Movie}] if media.is_movie?
+      metadata << %Q[{Genre: #{media.quality} Movies}] if media.is_movie?
 
       command_line = %Q[./SublerCLI -metadata "#{metadata}" -dest "#{media.converted_filename}"]
 
