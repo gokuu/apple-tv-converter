@@ -3,8 +3,10 @@ module AppleTvConverter
     def extract_subtitles(media)
       printf "* Extracting subtitles"
       media.mkv_data.extract_subtitles(File.dirname(media.original_filename)) do |progress|
+        printf "\r" + (" " * 40)
         printf "\r  * Progress: #{progress}%%"
       end
+      printf "\r" + (" " * 40)
       puts "\r  * Progress: [DONE]"
     end
 
@@ -13,8 +15,13 @@ module AppleTvConverter
         puts "* Encoding"
 
         options = get_transcode_options(media)
-        # Better video transcoding quality
-        options[:custom] = "-mbd rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -g 300 -pass 1" if convert_video?(media)
+
+        # Better video and audio transcoding quality
+        if convert_video?(media) || convert_audio?(media)
+          options[:custom] = ''
+          options[:custom] << ' -mbd rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -g 300 -pass 1 -qscale 1' if convert_video?(media)
+          options[:custom] << ' -ac 6 -ar 48000 -ab 448k -vol 512' if convert_audio?(media)
+        end
 
         transcoded = media.ffmpeg_data.transcode(media.converted_filename, options) do |progress|
           printf "\r" + (" " * 40)
