@@ -1,7 +1,7 @@
 module AppleTvConverter
   class MediaConverterAdapter
     def extract_subtitles(media)
-      printf "* Extracting subtitles"
+      puts "* Extracting subtitles"
       media.mkv_data.extract_subtitles(File.dirname(media.original_filename)) do |progress|
         printf "\r" + (" " * 40)
         printf "\r  * Progress: #{progress}%%"

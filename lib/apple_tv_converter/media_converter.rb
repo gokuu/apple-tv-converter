@@ -13,6 +13,10 @@ module AppleTvConverter
       }.merge(options)
 
       @adapter = is_windows? ? AppleTvConverter::MediaConverterWindowsAdapter.new : AppleTvConverter::MediaConverterMacAdapter.new
+
+      AppleTvConverter.logger.level = Logger::ERROR
+      FFMPEG.logger.level = Logger::ERROR
+      MKV.logger.level = Logger::ERROR
     end
 
     def process_media(media)
@@ -20,10 +24,6 @@ module AppleTvConverter
       AppleTvConverter.logger.debug "* Video codec: #{media.ffmpeg_data.video_codec}"
       AppleTvConverter.logger.debug "* Audio codec: #{media.ffmpeg_data.audio_codec}"
       AppleTvConverter.logger.debug "* Container: #{media.ffmpeg_data.container}" rescue nil
-
-      puts "*" * (4 + File.basename(media.original_filename).length)
-      puts "* #{File.basename(media.original_filename)} *"
-      puts "*" * (4 + File.basename(media.original_filename).length)
 
       @adapter.extract_subtitles(media) if media.is_mkv? && @options[:skip_subtitles] != true
 
