@@ -9,6 +9,8 @@ require 'mkv'
 require 'awesome_print'
 require 'fileutils'
 require 'language_list'
+require 'open-uri'
+require 'imdb'
 
 require 'apple_tv_converter/version'
 require 'apple_tv_converter/io_patch'
@@ -28,7 +30,7 @@ module AppleTvConverter
   def self.logger=(log)
     @logger = log
   end
-  
+
   # Get AppleTvConverter logger.
   #
   # @return [Logger]

@@ -61,6 +61,7 @@ module AppleTvConverter
       printf "* Cleaning up"
       begin
         FileUtils.rm(media.original_filename) unless media.original_filename == media.converted_filename
+        FileUtils.rm(media.artwork_filename) if File.exists?(media.artwork_filename)
         FileUtils.rm_r list_files(media.original_filename.gsub(File.extname(media.original_filename), '*.srt'))
         puts " [DONE]"
       rescue
@@ -94,5 +95,15 @@ module AppleTvConverter
         raise NotImplementedYetException
       end
 
+      def load_movie_from_imdb(media)
+        begin
+          search = Imdb::Search.new(media.show)
+
+          return search.movies.first if search.movies.count == 1
+        rescue
+        end
+
+        return nil
+      end
   end
 end

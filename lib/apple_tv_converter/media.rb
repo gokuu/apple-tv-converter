@@ -15,6 +15,10 @@ module AppleTvConverter
       end
     end
 
+    def artwork_filename
+      @artwork_filename ||= self.original_filename.gsub(/\.(mkv|avi|mp4)/, '.jpg')
+    end
+
     def subtitle_filename
       @subtitle_filename ||= self.original_filename.gsub(/\.(mkv|avi|mp4)/, '.srt')
     end
@@ -67,6 +71,10 @@ module AppleTvConverter
 
     def is_valid?
       ffmpeg_data.valid?
+    end
+
+    def hd?
+      ['1080p', '720p'].include?(quality)
     end
   end
 end

@@ -44,10 +44,40 @@ module AppleTvConverter
 
     def tag(media)
       metadata = ''
-      metadata << %Q[{Name: #{media.show} S#{media.season.to_s.rjust(2, '0')}E#{media.number.to_s.rjust(2, '0')}}] if media.is_tv_show_episode?
-      metadata << %Q[{Name: #{media.show}}] if media.is_movie?
-      metadata << %Q[{Genre: #{media.show}}{TV Show: #{media.show}}{TV Season: #{media.season}}{TV Episode #: #{media.number}}] if media.is_tv_show_episode?
-      metadata << %Q[{Genre: #{media.quality} Movies}] if media.is_movie?
+
+      if media.is_tv_show_episode?
+        metadata << %Q[{Name: #{media.show} S#{media.season.to_s.rjust(2, '0')}E#{media.number.to_s.rjust(2, '0')}}]
+        metadata << %Q[{Genre: #{media.show}}]
+        metadata << %Q[{TV Show: #{media.show}}]
+        metadata << %Q[{TV Season: #{media.season}}]
+        metadata << %Q[{TV Episode #: #{media.number}}]
+      else
+        imdb_movie = load_movie_from_imdb(media)
+
+        if !imdb_movie
+          metadata << %Q[{Name: #{media.show}}]
+          metadata << %Q[{Genre: #{media.quality} Movies}]
+        else
+          metadata << %Q[{Name: #{imdb_movie.title}}]
+          metadata << %Q[{Genre: #{imdb_movie.genres.first}}]
+          metadata << %Q[{Description: #{imdb_movie.plot}}]
+          metadata << %Q[{Release Date: #{imdb_movie.year}}]
+          metadata << %Q[{Director: #{imdb_movie.director.first}}]
+          metadata << %Q[{Codirector: #{imdb_movie.director[1]}}] if imdb_movie.director.length > 1
+
+          if imdb_movie.poster
+            open(imdb_movie.poster) do |f|
+              File.open(media.artwork_filename,"wb") do |file|
+                file.puts f.read
+              end
+            end
+
+            metadata << %Q[{Artwork: #{media.artwork_filename}}]
+          end
+        end
+      end
+
+      metadata << %Q[{HD Video: true}] if media.hd?
 
       command_line = %Q[./SublerCLI -metadata "#{metadata}" -dest "#{media.converted_filename}"]
 
