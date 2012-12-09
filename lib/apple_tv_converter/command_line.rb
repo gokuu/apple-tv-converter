@@ -12,7 +12,7 @@ module AppleTvConverter
 
         converter = AppleTvConverter::MediaConverter.new(options)
 
-        media_objects.each_with_index do |media, index|
+        media_objects.sort { |a, b| a.original_filename <=> b.original_filename }.each_with_index do |media, index|
           puts "---[ Processing file #{index + 1} of #{media_objects.length}: #{File.basename(media.original_filename)} ]----------------"
           converter.process_media media
         end
