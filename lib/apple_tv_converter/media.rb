@@ -1,6 +1,6 @@
 module AppleTvConverter
   class Media
-    attr_accessor :show, :season, :number, :genre
+    attr_accessor :show, :season, :number
     attr_reader :original_filename
 
     def original_filename=(value)
@@ -43,6 +43,10 @@ module AppleTvConverter
       end
 
       @quality
+    end
+
+    def genre
+      is_tv_show_episode? ? show : "#{quality} Movies"
     end
 
     def quality=(value)
