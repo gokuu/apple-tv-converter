@@ -3,17 +3,10 @@ module AppleTvConverter
     def add_subtitles(media)
       puts "* Adding subtitles"
 
-      # No need remove any subtitles, no video will have subtitles!
-      # printf "  * Removing any previous subtitles"
-
-      # command_line = %Q[./SublerCLI -remove -dest "#{media.converted_filename}"]
-
-      # AppleTvConverter.logger.debug "Executing:"
-      # AppleTvConverter.logger.debug command_line
-
-      # output = Open3.popen3(command_line) { |stdin, stdout, stderr, wait_thr| stdout.read }
-
-      # puts output.strip.empty? ? " [DONE]" : (output.strip == 'Error: (null)' ? " [NONE FOUND]" : " [ERROR]")
+      # eng: English
+      # por: Portuguese
+      # fre: French
+      # spa: Spanish
 
       if has_subtitles?(media)
         list_files(media.original_filename.gsub(File.extname(media.original_filename), '*.srt')).map do |subtitle_filename|
@@ -33,9 +26,9 @@ module AppleTvConverter
           AppleTvConverter.logger.debug command_line
 
           printf "  * Adding #{language.name} subtitles"
-          output = Open3.popen3(command_line) { |stdin, stdout, stderr, wait_thr| stdout.read }
+          output, exit_status = Open3.popen3(command_line) { |stdin, stdout, stderr, wait_thr| [ stdout.read, wait_thr.value] }
 
-          puts output.strip.empty? ? " [DONE]" : " [ERROR]"
+          puts exit_status.exitstatus == 0 ? " [DONE]" : " [ERROR]"
         end
       else
         puts "  * No subtitles found"
@@ -47,34 +40,34 @@ module AppleTvConverter
 
       if media.is_tv_show_episode?
         metadata << %Q[{Name: #{media.show} S#{media.season.to_s.rjust(2, '0')}E#{media.number.to_s.rjust(2, '0')}}]
-        metadata << %Q[{Genre: #{media.show}}]
+        metadata << %Q[{Genre: #{media.genre}}]
         metadata << %Q[{TV Show: #{media.show}}]
         metadata << %Q[{TV Season: #{media.season}}]
         metadata << %Q[{TV Episode #: #{media.number}}]
       else
-        imdb_movie = load_movie_from_imdb(media)
+        # imdb_movie = load_movie_from_imdb(media)
 
-        if !imdb_movie
+        # if !imdb_movie
           metadata << %Q[{Name: #{media.show}}]
-          metadata << %Q[{Genre: #{media.quality} Movies}]
-        else
-          metadata << %Q[{Name: #{imdb_movie.title}}]
-          metadata << %Q[{Genre: #{imdb_movie.genres.first}}]
-          metadata << %Q[{Description: #{imdb_movie.plot}}]
-          metadata << %Q[{Release Date: #{imdb_movie.year}}]
-          metadata << %Q[{Director: #{imdb_movie.director.first}}]
-          metadata << %Q[{Codirector: #{imdb_movie.director[1]}}] if imdb_movie.director.length > 1
+          metadata << %Q[{Genre: #{media.genre}}]
+        # else
+        #   metadata << %Q[{Name: #{imdb_movie.title}}]
+        #   metadata << %Q[{Genre: #{imdb_movie.genres.first}}]
+        #   metadata << %Q[{Description: #{imdb_movie.plot}}]
+        #   metadata << %Q[{Release Date: #{imdb_movie.year}}]
+        #   metadata << %Q[{Director: #{imdb_movie.director.first}}]
+        #   metadata << %Q[{Codirector: #{imdb_movie.director[1]}}] if imdb_movie.director.length > 1
 
-          if imdb_movie.poster
-            open(imdb_movie.poster) do |f|
-              File.open(media.artwork_filename,"wb") do |file|
-                file.puts f.read
-              end
-            end
+        #   if imdb_movie.poster
+        #     open(imdb_movie.poster) do |f|
+        #       File.open(media.artwork_filename,"wb") do |file|
+        #         file.puts f.read
+        #       end
+        #     end
 
-            metadata << %Q[{Artwork: #{media.artwork_filename}}]
-          end
-        end
+        #     metadata << %Q[{Artwork: #{media.artwork_filename}}]
+        #   end
+        # end
       end
 
       metadata << %Q[{HD Video: true}] if media.hd?
@@ -86,9 +79,9 @@ module AppleTvConverter
 
       printf "* Tagging"
 
-      output = Open3.popen3(command_line) { |stdin, stdout, stderr, wait_thr| stdout.read }
+      output, exit_status = Open3.popen3(command_line) { |stdin, stdout, stderr, wait_thr| [ stdout.read, wait_thr.value ] }
 
-      puts output.strip.empty? ? " [DONE]" : " [ERROR]"
+      puts exit_status.exitstatus == 0 ? " [DONE]" : " [ERROR]"
 
       return output.strip.empty?
     end
@@ -114,16 +107,5 @@ module AppleTvConverter
     def list_files(ls)
       `ls -1 #{ls.gsub(/\s/, '\ ').gsub(/\[/, '\[').gsub(/\]/, '\]')} 2>/dev/null`.split("\n")
     end
-
-    protected
-
-      def get_transcode_options(media)
-        options = {
-          :video_codec => convert_video?(media) ? 'mpeg4' : 'copy',
-          :audio_codec => convert_audio?(media) ? 'libfaac' : 'copy'
-        }
-
-        return options
-      end
   end
 end

@@ -20,16 +20,25 @@ module AppleTvConverter
     end
 
     def process_media(media)
-      AppleTvConverter.logger.debug "  ** #{File.basename(media.original_filename)}"
-      AppleTvConverter.logger.debug "* Video codec: #{media.ffmpeg_data.video_codec}"
-      AppleTvConverter.logger.debug "* Audio codec: #{media.ffmpeg_data.audio_codec}"
-      AppleTvConverter.logger.debug "* Container: #{media.ffmpeg_data.container}" rescue nil
-
-      @adapter.extract_subtitles(media) if media.is_mkv? && @options[:skip_subtitles] != true
+      if media.is_tv_show_episode?
+        puts "* TV Show Episode information:"
+        puts "* Name: #{media.show}"
+        puts "* Season: #{media.season}"
+        puts "* Number: #{media.number}"
+      else
+        puts "* Movie information"
+        puts "* Name: #{media.show}"
+        puts "* Genre: #{media.genre}"
+      end
+      if media.is_mkv?
+        puts "* #{media.mkv_data.tracks.select {|t| t.type == 'audio'}.length} audio track(s)"
+        puts "* #{media.mkv_data.tracks.select {|t| ['subtitle', 'subtitles'].include?(t.type) }.length} embedded subtitle track(s)"
+      end
+      puts "* #{Dir["#{media.original_filename.gsub(/.{4}$/, '.*srt')}"].length} external subtitle track(s)"
 
       if @adapter.transcode(media)
-        @adapter.add_subtitles(media) unless @options[:skip_subtitles] == true
-        @adapter.tag(media) unless @options[:skip_metadata] == true
+        # @adapter.add_subtitles(media) unless @options[:skip_subtitles] == true || !media.is_tv_show_episode?
+        # @adapter.tag(media) unless @options[:skip_metadata] == true || !media.is_tv_show_episode?
 
         # @adapter.add_to_itunes media
         @adapter.clean_up(media) unless @options[:skip_cleanup] == true

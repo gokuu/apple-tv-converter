@@ -13,6 +13,15 @@ module AppleTvConverter
           @original_filename = @original_filename.gsub(/\.mp4/, '.mkv')
         end
       end
+
+      if converted_filename == original_filename
+        @converted_filename = original_filename.gsub(File.extname(original_filename), "_2#{File.extname(original_filename)}")
+        @converted_filename_equals_original_filename = true
+      end
+    end
+
+    def converted_filename_equals_original_filename?
+      @converted_filename_equals_original_filename || false
     end
 
     def artwork_filename
@@ -25,6 +34,10 @@ module AppleTvConverter
 
     def converted_filename
       @converted_filename ||= self.original_filename.gsub(/\.(mkv|avi)/, '.mp4')
+    end
+
+    def converted_filename=(value)
+      @converted_filename = value
     end
 
     def converted_filename_with_subtitles
