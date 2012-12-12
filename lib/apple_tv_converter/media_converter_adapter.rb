@@ -146,7 +146,7 @@ module AppleTvConverter
       end
 
       def convert_subtitles?(media)
-        (media.is_mkv? && media.mkv_data.tracks.select {|t| t.type == 'subtitle' }.any?) || Dir["#{media.original_filename.gsub(/.{4}$/, '*srt')}"].any?
+        (media.is_mkv? && media.mkv_data.tracks.select {|t| t.type == 'subtitle' }.any?) || list_files("#{media.original_filename.gsub(/.{4}$/, '*srt')}").any?
       end
 
       def convert?(media)
