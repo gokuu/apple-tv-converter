@@ -34,40 +34,6 @@ module AppleTvConverter
           # options << " -q:a 1" if media.ffmpeg_data.audio_codec =~ /ac3/i
         end
 
-        # If the file is a MKV file, map all tracks when transcoding
-        if media.is_mkv?
-          media.mkv_data.tracks.each do |track|
-            options[:map] << " -map 0:#{track.mkv_info_id}"
-            options[:metadata] << " -metadata:s:#{track.mkv_info_id} language=#{track.language}" if ['audio', 'subtitle', 'subtitles'].include?(track.type)
-          end
-
-          last_stream_id = media.mkv_data.tracks.length - 1
-        else
-          options[:map] << " -map 0:0 -map 0:1"
-          last_stream_id = 1
-        end
-
-        # Load any external subtitle files
-        last_file_id = 0
-        Dir["#{media.original_filename.gsub(/.{4}$/, '.*srt')}"].each do |subtitle_file|
-          last_file_id += 1
-          last_stream_id += 1
-
-          subtitle_language = (subtitle_file.match(/\.(.{3})\.srt$/) || ['unk'])[1]
-          options[:files] << " -i #{Shellwords.escape(subtitle_file)}"
-          options[:metadata] << " -metadata:s:#{last_stream_id} language=#{subtitle_language}"
-          options[:map] << " -map #{last_file_id}:0"
-        end
-
-        # Set metadata tags
-        if media.is_tv_show_episode?
-          options[:metadata] << %Q[ -metadata title="#{media.show} S#{media.season.to_s.rjust(2, '0')}E#{media.number.to_s.rjust(2, '0')}"]
-          options[:metadata] << %Q[ -metadata genre="#{media.genre}"]
-          options[:metadata] << %Q[ -metadata show="#{media.show}"]
-        else
-          options[:metadata] << %Q[ -metadata title="#{media.show}"]
-          options[:metadata] << %Q[ -metadata genre="#{media.quality} Movies"]
-        end
 
         options = "#{options[:files]} #{options[:codecs]} #{options[:map]} #{options[:metadata]} #{options[:extra]}"
 

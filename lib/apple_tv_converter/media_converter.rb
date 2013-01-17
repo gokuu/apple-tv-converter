@@ -64,8 +64,8 @@ module AppleTvConverter
       end
 
       if @adapter.transcode(media)
-        # @adapter.add_subtitles(media) unless @options[:skip_subtitles] == true || !media.is_tv_show_episode?
-        # @adapter.tag(media) unless @options[:skip_metadata] == true || !media.is_tv_show_episode?
+        @adapter.add_subtitles(media) unless @options[:skip_subtitles] == true
+        @adapter.tag(media) unless @options[:skip_metadata] == true
 
         # @adapter.add_to_itunes media
         @adapter.clean_up(media) unless @options[:skip_cleanup] == true
