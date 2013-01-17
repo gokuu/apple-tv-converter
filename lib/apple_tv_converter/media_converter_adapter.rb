@@ -44,9 +44,11 @@ module AppleTvConverter
         transcoded = nil
 
         begin
+          start_time = Time.now.to_i
           transcoded = media.ffmpeg_data.transcode(media.converted_filename, options) do |progress|
+            elapsed = Time.now.to_i - start_time
             printf "\r" + (" " * 40)
-            printf %Q[\r  * Progress: #{(progress * 100).round(2)}%%]
+            printf %Q[\r  * Progress: #{(progress * 100).round(2).to_s.rjust(6)}%% (#{(elapsed / 60).to_s.rjust(2, '0')}:#{(elapsed % 60).to_s.rjust(2, '0')})]
           end
         rescue Interrupt
           puts "\nProcess canceled!"

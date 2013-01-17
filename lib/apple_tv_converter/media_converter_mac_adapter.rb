@@ -1,12 +1,7 @@
 module AppleTvConverter
   class MediaConverterMacAdapter < MediaConverterAdapter
     def add_subtitles(media)
-      puts "* Adding subtitles"
-
-      # eng: English
-      # por: Portuguese
-      # fre: French
-      # spa: Spanish
+      puts "* Adding external subtitles"
 
       if has_subtitles?(media)
         list_files(media.original_filename.gsub(File.extname(media.original_filename), '*.srt')).map do |subtitle_filename|
