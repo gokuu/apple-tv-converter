@@ -92,10 +92,11 @@ module AppleTvConverter
           if media.converted_filename_equals_original_filename?
             FileUtils.mv media.converted_filename, media.original_filename
           end
-
-          FileUtils.rm(media.artwork_filename) if File.exists?(media.artwork_filename)
-          FileUtils.rm_r list_files(media.original_filename.gsub(File.extname(media.original_filename), '*.srt'))
         end
+
+        # Always clean up subtitles and artwork
+        FileUtils.rm(media.artwork_filename) if File.exists?(media.artwork_filename)
+        FileUtils.rm_r list_files(media.original_filename.gsub(File.extname(media.original_filename), '*.srt'))
 
         puts " [DONE]"
       rescue
