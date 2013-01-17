@@ -38,6 +38,12 @@ module AppleTvConverter
           # options << " -q:a 1" if media.ffmpeg_data.audio_codec =~ /ac3/i
         end
 
+        # If the file is a MKV file, map all tracks but subtitle when transcoding
+        if media.is_mkv?
+          media.mkv_data.tracks.each do |track|
+            options[:map] << " -map 0:#{track.mkv_info_id}" unless track.is_subtitle?
+          end
+        end
 
         options = "#{options[:files]} #{options[:codecs]} #{options[:map]} #{options[:metadata]} #{options[:extra]}"
 
