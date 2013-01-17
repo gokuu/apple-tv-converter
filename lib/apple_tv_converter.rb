@@ -72,4 +72,60 @@ module AppleTvConverter
   def self.atomic_parsley_binary
     @atomic_parsley_binary.nil? ? 'AtomicParsley' : @atomic_parsley_binary
   end
+
+  def get_language_name(language_code)
+    # ??? - English
+    # ara - Arabic
+    # bul - Bulgarian
+    # chi - Chilean? -> ignore?
+    # cze - Czech -> ces
+    # dan - Danish
+    # dut - Dutch -> nld
+    # eng - English
+    # est - Estonian
+    # fin - Finnish
+    # fre - French -> fra
+    # ger - German -> deu
+    # gre - Greek -> ell
+    # heb - Hebrew
+    # hrv - Croatian
+    # hun - Hungarian
+    # ice - Icelandic -> isl
+    # ita - Italian
+    # jpn - Japanese
+    # kor - Korean
+    # lav - Latvian
+    # lit - Lithuanian
+    # nor - Norwegian
+    # pol - Polish
+    # por - Portuguese
+    # rum - Romanian -> ron
+    # rus - Russian
+    # slv - Slovenian
+    # spa - Spanish
+    # srp - Serbian
+    # swe - Swedish
+    # tha - Thai
+    # tur - Turkish
+    # ukr - Ukrainian
+    language_code_mappings = {
+      '' => 'eng',
+      'chi' => nil,
+      'cze' => 'ces',
+      'dut' => 'nld',
+      'fre' => 'fra',
+      'ger' => 'deu',
+      'gre' => 'ell',
+      'ice' => 'isl',
+      'rum' => 'ron'
+    }
+
+    language_code = language_code_mappings.has_key?(language_code) ? language_code_mappings[language_code] : language_code
+
+    return nil if language_code.nil?
+
+    language = ::LanguageList::LanguageInfo.find_by_iso_639_3(language_code)
+
+    return language.name
+  end
 end

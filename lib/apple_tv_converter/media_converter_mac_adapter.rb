@@ -10,22 +10,20 @@ module AppleTvConverter
 
       if has_subtitles?(media)
         list_files(media.original_filename.gsub(File.extname(media.original_filename), '*.srt')).map do |subtitle_filename|
-          subtitle_filename =~ /(\w{3})\.srt$/
-          language_code = $1 || 'eng'
+          subtitle_filename =~ /\.(\w{3})\.srt$/i
+          language_code = $1 || 'und'
 
-          language = ::LanguageList::LanguageInfo.find_by_iso_639_3(language_code)
-          language ||= ::LanguageList::LanguageInfo.find_by_iso_639_3('eng')
-
+          language_name = get_language_name(language_code)
 
           command_line = "./SublerCLI "
           command_line << %Q[-source "#{subtitle_filename}" ]
-          command_line << %Q[-language "#{language.name}" ]
+          command_line << %Q[-language "#{language_name}" ]
           command_line << %Q[-dest "#{media.converted_filename}"]
 
           AppleTvConverter.logger.debug "Executing:"
           AppleTvConverter.logger.debug command_line
 
-          printf "  * Adding #{language.name} subtitles"
+          printf "  * Adding #{language_name} subtitles"
           output, exit_status = Open3.popen3(command_line) { |stdin, stdout, stderr, wait_thr| [ stdout.read, wait_thr.value] }
 
           puts exit_status.exitstatus == 0 ? " [DONE]" : " [ERROR]"

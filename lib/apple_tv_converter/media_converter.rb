@@ -1,5 +1,7 @@
 module AppleTvConverter
   class MediaConverter
+    include AppleTvConverter
+
     @@timeout = 200
 
     def is_windows? ; RUBY_PLATFORM =~/.*?mingw.*?/i ; end
@@ -32,9 +34,34 @@ module AppleTvConverter
       end
       if media.is_mkv?
         puts "* #{media.mkv_data.tracks.select {|t| t.type == 'audio'}.length} audio track(s)"
+
+        if media.mkv_data.tracks.select {|t| t.type == 'audio' }.any?
+          media.mkv_data.tracks.select {|t| t.type == 'audio' }.each do |audio|
+            language_code = audio.language || 'und'
+            language_name = get_language_name(language_code)
+            puts "  * #{language_code} - #{language_name.nil? ? 'Unknown (ignoring)' : language_name}"
+          end
+        end
         puts "* #{media.mkv_data.tracks.select {|t| ['subtitle', 'subtitles'].include?(t.type) }.length} embedded subtitle track(s)"
+
+        if media.mkv_data.tracks.select {|t| ['subtitle', 'subtitles'].include?(t.type) }.any?
+          media.mkv_data.tracks.select {|t| ['subtitle', 'subtitles'].include?(t.type) }.each do |subtitle|
+            language_code = subtitle.language || 'und'
+            language_name = get_language_name(language_code)
+            puts "  * #{language_code} - #{language_name.nil? ? 'Unknown (ignoring)' : language_name}"
+          end
+        end
       end
+
       puts "* #{Dir["#{media.original_filename.gsub(/.{4}$/, '.*srt')}"].length} external subtitle track(s)"
+      if Dir["#{media.original_filename.gsub(/.{4}$/, '.*srt')}"].any?
+        Dir["#{media.original_filename.gsub(/.{4}$/, '.*srt')}"].each do |subtitle|
+          subtitle =~ /\.(.{3})\.srt/i
+          language_code = $1 || 'und'
+          language_name = get_language_name(language_code)
+          puts "  * #{language_code.blank? ? 'eng' : language_code} - #{language_name.nil? ? 'Unknown (ignoring)' : language_name}"
+        end
+      end
 
       if @adapter.transcode(media)
         # @adapter.add_subtitles(media) unless @options[:skip_subtitles] == true || !media.is_tv_show_episode?
