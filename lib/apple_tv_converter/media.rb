@@ -14,7 +14,7 @@ module AppleTvConverter
         end
       end
 
-      if converted_filename == original_filename
+      if converted_filename == original_filename && needs_transcoding?
         @converted_filename = original_filename.gsub(File.extname(original_filename), "_2#{File.extname(original_filename)}")
         @converted_filename_equals_original_filename = true
       end
@@ -88,6 +88,22 @@ module AppleTvConverter
 
     def is_valid?
       ffmpeg_data.valid?
+    end
+
+    def needs_audio_conversion?
+      return ffmpeg_data.audio_codec !~ /(?:aac)/i
+    end
+
+    def needs_video_conversion?
+      return ffmpeg_data.video_codec !~ /.*(?:h264|mpeg4).*/i || ffmpeg_data.video_codec =~ /.*(?:xvid|divx).*/i
+    end
+
+    def needs_subtitles_conversion?
+      is_mkv? && mkv_data.tracks.select {|t| t.type =~ /subtitles?/ }.any?
+    end
+
+    def needs_transcoding?
+      !(is_valid? && is_mp4? && !needs_video_conversion? && !needs_audio_conversion?)
     end
 
     def hd?
