@@ -103,7 +103,7 @@ module AppleTvConverter
     end
 
     def list_files(ls)
-      `ls -1 #{ls.gsub(/\s/, '\ ').gsub(/\[/, '\[').gsub(/\]/, '\]')} 2>/dev/null`.split("\n")
+      `ls -1 #{Shellwords.escape(ls).gsub(/\\\*/, '*')} 2>/dev/null`.split("\n")
     end
   end
 end
