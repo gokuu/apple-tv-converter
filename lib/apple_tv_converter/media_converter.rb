@@ -63,6 +63,8 @@ module AppleTvConverter
         end
       end
 
+      @adapter.extract_subtitles(media) if media.is_mkv?
+
       if @adapter.transcode(media)
         @adapter.add_subtitles(media) unless @options[:skip_subtitles] == true
         @adapter.tag(media) unless @options[:skip_metadata] == true

@@ -4,12 +4,16 @@ module AppleTvConverter
 
     def extract_subtitles(media)
       puts "* Extracting subtitles"
-      media.mkv_data.extract_subtitles(File.dirname(media.original_filename)) do |progress|
-        printf "\r" + (" " * 40)
-        printf "\r  * Progress: #{progress}%%"
+      last_destination_filename = nil
+      media.mkv_data.extract_subtitles(File.dirname(media.original_filename)) do |progress, elapsed, destination_filename|
+        puts "" if last_destination_filename && last_destination_filename != destination_filename
+        last_destination_filename = destination_filename
+
+        printf "\r" + "  * #{destination_filename}: Progress: #{progress.to_s.rjust(3)}%% (#{(elapsed / 60).to_s.rjust(2, '0')}:#{(elapsed % 60).to_s.rjust(2, '0')})     "
       end
-      printf "\r" + (" " * 40)
-      puts "\r  * Progress: [DONE]"
+
+      puts ""
+      puts "  * Extracted all subtitles"
     end
 
     def transcode(media)
