@@ -11,8 +11,8 @@ module AppleTvConverter
     end
 
     def transcode(media)
-      if convert?(media)
-        puts "* Encoding#{', adding subtitles and metadata' unless media.is_tv_show_episode?}"
+      if media.needs_transcoding?
+        puts "* Encoding"
 
         options = {}
         options[:codecs] = get_transcode_options(media)
@@ -22,11 +22,11 @@ module AppleTvConverter
         options[:extra] = ""
 
         # Better video and audio transcoding quality
-        if convert_video?(media)
+        if media.needs_video_conversion?
           options[:extra] << ' -mbd rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -g 300 -pass 1 -q:v 1 -r 23.98'
         end
 
-        if convert_audio?(media)
+        if media.needs_audio_conversion?
           options[:extra] << " -vol 512" # Increase the volume when transcoding
           options[:extra] << " -ac #{media.ffmpeg_data.audio_channels} -ar #{media.ffmpeg_data.audio_sample_rate} -ab 448k" if media.ffmpeg_data.audio_codec =~ /mp3/i
           # options << " -q:a 1" if media.ffmpeg_data.audio_codec =~ /ac3/i
@@ -114,7 +114,7 @@ module AppleTvConverter
     def clean_up(media)
       printf "* Cleaning up"
       begin
-        if convert?(media)
+        if media.needs_transcoding?
           FileUtils.rm media.original_filename
 
           if media.converted_filename_equals_original_filename?
@@ -137,29 +137,13 @@ module AppleTvConverter
         raise NotImplementedYetException
       end
 
-      def convert_audio?(media)
-        return media.ffmpeg_data.audio_codec !~ /(?:aac)/i
-      end
-
-      def convert_video?(media)
-        return media.ffmpeg_data.video_codec !~ /.*(?:h264|mpeg4).*/i || media.ffmpeg_data.video_codec =~ /.*(?:xvid|divx).*/i
-      end
-
-      def convert_subtitles?(media)
-        (media.is_mkv? && media.mkv_data.tracks.select {|t| t.type == 'subtitle' }.any?) || list_files("#{media.original_filename.gsub(/.{4}$/, '*srt')}").any?
-      end
-
-      def convert?(media)
-        !(media.is_valid? && media.is_mp4? && !convert_video?(media) && !convert_audio?(media) && !convert_subtitles?(media))
-      end
-
       def has_subtitles?(media)
         list_files(File.join(File.dirname(media.original_filename), '*.srt')).any?
       end
 
       def get_transcode_options(media)
-        options = " -vcodec #{convert_video?(media) ? 'mpeg4' : 'copy'} -acodec #{convert_audio?(media) ? 'libfaac' : 'copy'}"
-        options << " -scodec mov_text" if convert_subtitles?(media)
+        options =  " -vcodec #{media.needs_video_conversion? ? 'mpeg4' : 'copy'}"
+        options << " -acodec #{media.needs_audio_conversion? ? 'libfaac' : 'copy'}"
 
         options
       end
