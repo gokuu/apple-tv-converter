@@ -4,21 +4,27 @@ module AppleTvConverter
 
     def extract_subtitles(media)
       puts "* Extracting subtitles"
-      last_destination_filename = nil
-      media.mkv_data.extract_subtitles(File.dirname(media.original_filename)) do |progress, elapsed, destination_filename|
-        puts "" if last_destination_filename && last_destination_filename != destination_filename
-        last_destination_filename = destination_filename
 
-        printf "\r" + "  * #{destination_filename}: Progress: #{progress.to_s.rjust(3)}%% (#{(elapsed / 60).to_s.rjust(2, '0')}:#{(elapsed % 60).to_s.rjust(2, '0')})     "
+      if media.mkv_data.has_subtitles?
+        last_destination_filename = nil
+
+        media.mkv_data.extract_subtitles(File.dirname(media.original_filename)) do |progress, elapsed, destination_filename|
+          puts "" if last_destination_filename && last_destination_filename != destination_filename
+          last_destination_filename = destination_filename
+
+          printf "\r" + "  * #{destination_filename}: Progress: #{progress.to_s.rjust(3)}%% (#{(elapsed / 60).to_s.rjust(2, '0')}:#{(elapsed % 60).to_s.rjust(2, '0')})     "
+        end
+
+        puts ""
+        puts "  * Extracted all subtitles"
+      else
+        puts "  * No subtitles to extract"
       end
-
-      puts ""
-      puts "  * Extracted all subtitles"
     end
 
     def transcode(media)
       if media.needs_transcoding?
-        puts "* Encoding"
+        puts "* Transcoding"
 
         options = {}
         options[:codecs] = get_transcode_options(media)
@@ -35,10 +41,9 @@ module AppleTvConverter
         if media.needs_audio_conversion?
           options[:extra] << " -vol 512" # Increase the volume when transcoding
           options[:extra] << " -ac #{media.ffmpeg_data.audio_channels} -ar #{media.ffmpeg_data.audio_sample_rate} -ab 448k" if media.ffmpeg_data.audio_codec =~ /mp3/i
-          # options << " -q:a 1" if media.ffmpeg_data.audio_codec =~ /ac3/i
         end
 
-        # If the file is a MKV file, map all tracks but subtitle when transcoding
+        # If the file is a MKV file, map all tracks but subtitles when transcoding
         if media.is_mkv?
           media.mkv_data.tracks.each do |track|
             options[:map] << " -map 0:#{track.mkv_info_id}" unless track.is_subtitle?
