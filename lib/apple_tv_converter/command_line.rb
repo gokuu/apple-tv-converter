@@ -58,7 +58,7 @@ module AppleTvConverter
             raise ArgumentError.new("Path is not a directory: #{argument}") unless File.directory?(argument)
 
             # Recursively load all movie files
-            data[:media].push *(Dir[File.join(argument, '**', '*.{mp4,avi,mkv,m4v}')].map do |file|
+            data[:media].push *(Dir[File.join(argument, '**', '*.{mp4,avi,mkv,m4v,m2ts}')].map do |file|
               parse_filename(file)
             end.compact)
 
