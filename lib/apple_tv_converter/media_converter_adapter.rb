@@ -123,7 +123,7 @@ module AppleTvConverter
       end
 
       def get_transcode_options(media)
-        options =  " -vcodec #{media.needs_video_conversion? ? 'mpeg4' : 'copy'}"
+        options =  " -vcodec #{media.needs_video_conversion? ? 'libx264' : 'copy'}"
         options << " -acodec #{media.needs_audio_conversion? ? 'libfaac' : 'copy'}"
 
         options
