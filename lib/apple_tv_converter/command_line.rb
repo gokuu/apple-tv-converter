@@ -41,7 +41,8 @@ module AppleTvConverter
         options.media = []
 
         opts = OptionParser.new do |opts|
-          opts.banner = 'Usage: apple-tv-converter [options]'
+          opts.banner = "Usage: apple-tv-converter [options] [file]\n" +
+                        "       [file] must be provided unless the -d (--dir) switch is present.\n"
 
           opts.on('--no-transcoding', "Don't transcode video or audio") do |v|
             options.skip_transcoding = true
