@@ -7,13 +7,8 @@ module AppleTvConverter
     def is_windows? ; RUBY_PLATFORM =~/.*?mingw.*?/i ; end
     def is_macosx? ; RUBY_PLATFORM =~/.*?darwin.*?/i ; end
 
-    def initialize(options = {})
-      @options = {
-        :skip_subtitles => false,
-        :skip_metadata => false,
-        :skip_cleanup => false
-      }.merge(options)
-
+    def initialize(options)
+      @options = options
       @adapter = is_windows? ? AppleTvConverter::MediaConverterWindowsAdapter.new : AppleTvConverter::MediaConverterMacAdapter.new
 
       AppleTvConverter.logger.level = Logger::ERROR
@@ -32,6 +27,7 @@ module AppleTvConverter
         puts "* Name: #{media.show}"
         puts "* Genre: #{media.genre}"
       end
+
       if media.is_mkv?
         puts "* #{media.mkv_data.tracks.select {|t| t.type == 'audio'}.length} audio track(s)"
 
@@ -63,14 +59,14 @@ module AppleTvConverter
         end
       end
 
-      @adapter.extract_subtitles(media) if media.is_mkv?
+      @adapter.extract_subtitles(media, @options.languages) if media.is_mkv? && !@options.skip_subtitles
 
-      if @adapter.transcode(media)
-        @adapter.add_subtitles(media) unless @options[:skip_subtitles] == true
-        @adapter.tag(media) unless @options[:skip_metadata] == true
+      if @options.skip_transcoding || @adapter.transcode(media, @options.languages)
+        @adapter.add_subtitles(media) unless @options.skip_subtitles
+        @adapter.tag(media) unless @options.skip_metadata
 
-        # @adapter.add_to_itunes media
-        @adapter.clean_up(media) unless @options[:skip_cleanup] == true
+        @adapter.add_to_itunes media if @options.add_to_itunes
+        @adapter.clean_up(media) unless @options.skip_cleanup
       end
     end
   end

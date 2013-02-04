@@ -2,13 +2,13 @@ module AppleTvConverter
   class MediaConverterAdapter
     include AppleTvConverter
 
-    def extract_subtitles(media)
+    def extract_subtitles(media, languages)
       puts "* Extracting subtitles"
 
-      if media.mkv_data.has_subtitles?
+      if media.mkv_data.has_subtitles?(languages)
         last_destination_filename = nil
 
-        media.mkv_data.extract_subtitles(File.dirname(media.original_filename)) do |progress, elapsed, destination_filename|
+        media.mkv_data.extract_subtitles({ :destination_dir => File.dirname(media.original_filename), :language => languages }) do |progress, elapsed, destination_filename|
           puts "" if last_destination_filename && last_destination_filename != destination_filename
           last_destination_filename = destination_filename
 
@@ -22,7 +22,7 @@ module AppleTvConverter
       end
     end
 
-    def transcode(media)
+    def transcode(media, languages = nil)
       if media.needs_transcoding?
         puts "* Transcoding"
 
@@ -39,14 +39,14 @@ module AppleTvConverter
         end
 
         if media.needs_audio_conversion?
-          options[:extra] << " -vol 512" # Increase the volume when transcoding
-          options[:extra] << " -ac #{media.ffmpeg_data.audio_channels} -ar #{media.ffmpeg_data.audio_sample_rate} -ab 448k" if media.ffmpeg_data.audio_codec =~ /mp3/i
+          options[:extra] << " -af volume=2.000000" # Increase the volume when transcoding
+          options[:extra] << " -ac #{media.ffmpeg_data.audio_channels} -ar #{media.ffmpeg_data.audio_sample_rate} -ab #{[448, media.ffmpeg_data.audio_bitrate].min}k" if media.ffmpeg_data.audio_codec =~ /mp3/i
         end
 
         # If the file is a MKV file, map all tracks but subtitles when transcoding
         if media.is_mkv?
           media.mkv_data.tracks.each do |track|
-            options[:map] << " -map 0:#{track.mkv_info_id}" unless track.is_subtitle?
+            options[:map] << " -map 0:#{track.mkv_info_id}" if !track.is_subtitle? && (track.is_video? || (track.is_audio? && (languages.nil? || languages.empty? || languages.include?(track.language))))
           end
         end
 

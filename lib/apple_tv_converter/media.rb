@@ -66,6 +66,10 @@ module AppleTvConverter
       @quality = value
     end
 
+    def name
+      %Q[#{show}#{" S#{season.to_s.rjust(2, '0')}E#{number.to_s.rjust(2, '0')}" if is_tv_show_episode?}]
+    end
+
     def mkv_data
       @mkv_data ||= MKV::Movie.new(original_filename)
     end
@@ -95,7 +99,7 @@ module AppleTvConverter
     end
 
     def needs_video_conversion?
-      return ffmpeg_data.video_codec !~ /.*(?:h264|mpeg4).*/i || ffmpeg_data.video_codec =~ /.*(?:xvid|divx).*/i
+      return ffmpeg_data.video_codec !~ /(?:.*?h264|^mpeg4).*/i || ffmpeg_data.video_codec =~ /.*(?:xvid|divx).*/i
     end
 
     def needs_subtitles_conversion?

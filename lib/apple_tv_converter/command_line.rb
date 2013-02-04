@@ -8,7 +8,7 @@ module AppleTvConverter
       begin
         options = parse_arguments(args)
 
-        media_objects = options.delete(:media)
+        media_objects = options.media
 
         converter = AppleTvConverter::MediaConverter.new(options)
 
@@ -27,57 +27,78 @@ module AppleTvConverter
     private
 
       def parse_arguments(arguments)
-        data = {
-          :skip_subtitles => false,
-          :skip_metadata => false,
-          :skip_cleanup => false,
-          :media => []
-        }
+        require 'optparse'
+        require 'optparse/time'
+        require 'ostruct'
 
-        raise ArgumentError.new("No arguments supplied") unless arguments.any?
+        options = OpenStruct.new
+        options.skip_transcoding = false
+        options.skip_subtitles = false
+        options.skip_metadata = false
+        options.skip_cleanup = false
+        options.add_to_itunes = false
+        options.languages = []
+        options.media = []
 
-        is_dir = false
+        opts = OptionParser.new do |opts|
+          opts.banner = 'Usage: apple-tv-converter [options]'
 
-        arguments.each do |argument|
-          if argument.strip =~ /^--/
-            # Can be a switch, starting with --
-            if argument.strip =~ /^--no-subtitles$/i
-              data[:skip_subtitles] = true
-            elsif argument.strip =~ /^--no-metadata$/i
-              data[:skip_metadata] = true
-            elsif argument.strip =~ /^--no-cleanup$/i
-              data[:skip_cleanup] = true
-            elsif argument.strip =~ /^--dir$/i
-              is_dir = true
-            else
-              raise ArgumentError.new("Unknown switch: #{argument}")
-            end
-          elsif is_dir
-            # Previous argument identified a directory
-            raise ArgumentError.new("Path not found: #{argument}") unless File.exists?(argument)
-            raise ArgumentError.new("Path is not a directory: #{argument}") unless File.directory?(argument)
+          opts.on('--no-transcoding', "Don't transcode video or audio") do |v|
+            options.skip_transcoding = true
+          end
 
-            # Recursively load all movie files
-            data[:media].push *(Dir[File.join(argument, '**', '*.{mp4,avi,mkv,m4v,m2ts}')].map do |file|
+          opts.on('--no-subtitles', "Don't add subtitles") do |v|
+            options.skip_subtitles = true
+          end
+
+          opts.on('--no-metadata', "Don't add metadata") do |m|
+            options.skip_metadata = true
+          end
+
+          opts.on('--no-cleanup', "Don't cleanup the source files after processing") do |c|
+            options.skip_cleanup = true
+          end
+
+          opts.on('-l', '--languages eng,por,...', Array, "Only keep audio and subtitles in the specified languages") do |languages|
+            options.languages.push *languages
+          end
+
+          opts.on('-d', '--dir [DIRECTORY]', 'Process all files in DIRECTORY recursively') do |dir|
+            raise ArgumentError.new("Path not found: #{dir}") unless File.exists?(dir)
+            raise ArgumentError.new("Path is not a directory: #{dir}") unless File.directory?(dir)
+
+            options.media.push *(Dir[File.join(dir, '**', '*.{mp4,avi,mkv,m4v,m2ts}')].map do |file|
               parse_filename(file)
             end.compact)
+          end
 
-            is_dir = false
-          else
-            # Or a file
-            raise ArgumentError.new("File not found: #{argument}") unless File.exists?(argument)
+          opts.on('--itunes', "Add processed file to iTunes library, if it isn't there yet") do |i|
+            options.add_to_itunes = true
+          end
 
-            media = parse_filename(argument)
+          opts.separator ""
+          opts.separator "Common options:"
 
-            raise ArgumentError.new("Invalid media file: #{argument}") unless media
+          # No argument, shows at tail.  This will print an options summary.
+          # Try it and see!
+          opts.on_tail("-h", "--help", "Show this message") do
+            puts opts
+            exit
+          end
 
-            data[:media] << media
+          # Another typical switch to print the version.
+          opts.on_tail("--version", "Show version") do
+            puts AppleTvConverter::VERSION
+            exit
           end
         end
 
-        raise ArgumentError.new("No media file supplied") unless data[:media].any?
+        opts.parse! arguments
+        options.media.push *(arguments.map { |file| parse_filename(file) }.compact)
 
-        return data
+        raise ArgumentError.new("No media file supplied") unless options.media.any?
+
+        return options
       end
 
       def parse_filename(file)

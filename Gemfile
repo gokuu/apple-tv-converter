@@ -2,7 +2,7 @@ source :rubygems
 
 gemspec
 
-gem 'mkv'
+gem 'mkv', '>= 0.0.3'
 gem 'streamio-ffmpeg'
 gem 'language_list'
 gem 'imdb'

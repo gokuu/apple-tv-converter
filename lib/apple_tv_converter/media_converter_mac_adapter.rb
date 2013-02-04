@@ -80,20 +80,35 @@ module AppleTvConverter
     end
 
     def add_to_itunes(media)
-      printf "  * Adding to iTunes"
+      printf "* Adding to iTunes"
 
       command_line = [
-        "ln -s",
-        "#{media.converted_filename}".gsub(/\s/, '\ ').gsub(/\[/, '\[').gsub(/\]/, '\]'),
-        "#{File.expand_path(File.join('~', 'Music', 'iTunes', 'iTunes Media', 'Automatically Add to iTunes.localized'))}".gsub(/\s/, '\ ').gsub(/\[/, '\[').gsub(/\]/, '\]')
+        'osascript',
+        '-e',
+        %Q['tell application "iTunes" to set results to (every file track of playlist "Library" whose name equals "#{media.name}")']
       ].join(' ')
 
       AppleTvConverter.logger.debug "Executing:"
       AppleTvConverter.logger.debug command_line
+      output, exit_status = Open3.popen3(command_line) { |stdin, stdout, stderr, wait_thr| [ stdout.read, wait_thr.value ] }
 
-      `#{command_line}`
+      if output.strip.blank?
+        # Blank result means the file isn't in the library
+        command_line = [
+          'osascript',
+          '-e',
+          %Q['tell application "iTunes" to add POSIX file "#{media.converted_filename}"']
+        ].join(' ')
 
-      puts ' [DONE]'
+        AppleTvConverter.logger.debug "Executing:"
+        AppleTvConverter.logger.debug command_line
+        output, exit_status = Open3.popen3(command_line) { |stdin, stdout, stderr, wait_thr| [ stdout.read, wait_thr.value ] }
+
+        puts ' [DONE]'
+      else
+        puts ' [NOT NECESSARY]'
+      end
+
       return true
     end
 
