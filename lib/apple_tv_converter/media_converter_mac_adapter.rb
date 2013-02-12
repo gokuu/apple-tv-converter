@@ -95,10 +95,12 @@ module AppleTvConverter
       if output.strip.blank?
         # Blank result means the file isn't in the library
         command_line = [
-          'osascript',
-          '-e',
-          %Q['tell application "iTunes" to add POSIX file "#{media.converted_filename}"']
-        ].join(' ')
+          'osascript <<EOF',
+          'tell application "iTunes"',
+          %Q[add POSIX file "#{media.converted_filename.gsub(/"/, '\\"')}"],
+          'end tell',
+          'EOF'
+        ].join("\n")
 
         AppleTvConverter.logger.debug "Executing:"
         AppleTvConverter.logger.debug command_line
