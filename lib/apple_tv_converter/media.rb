@@ -3,14 +3,19 @@ module AppleTvConverter
     attr_accessor :show, :season, :number
     attr_reader :original_filename
 
+    def self.subtitle_extensions
+      ['srt', 'sub', 'ssa', 'ass']
+    end
+
     def original_filename=(value)
       @original_filename = value
 
       if @original_filename =~ /.*?\.mp4$/
-        if File.exists?(@original_filename.gsub(/\.mp4/, '.avi'))
-          @original_filename = @original_filename.gsub(/\.mp4/, '.avi')
-        elsif File.exists?(@original_filename.gsub(/\.mp4/, '.mkv'))
-          @original_filename = @original_filename.gsub(/\.mp4/, '.mkv')
+        Dir[@original_filename.gsub(File.extname(@original_filename), '*')].each do |file|
+          if @original_filename != file && !Media.subtitle_extensions.include?(file.downcase.gsub(/.*\./, ''))
+            @original_filename = file
+            break
+          end
         end
       end
 
@@ -25,15 +30,15 @@ module AppleTvConverter
     end
 
     def artwork_filename
-      @artwork_filename ||= self.original_filename.gsub(/\.(mkv|avi|mp4)/, '.jpg')
+      @artwork_filename ||= self.original_filename.gsub(File.extname(self.original_filename), '.jpg')
     end
 
     def subtitle_filename
-      @subtitle_filename ||= self.original_filename.gsub(/\.(mkv|avi|mp4)/, '.srt')
+      @subtitle_filename ||= self.original_filename.gsub(File.extname(self.original_filename), '.srt')
     end
 
     def converted_filename
-      @converted_filename ||= self.original_filename.gsub(/\.(mkv|avi)/, '.mp4')
+      @converted_filename ||= self.original_filename.gsub(File.extname(self.original_filename), '.mp4')
     end
 
     def converted_filename=(value)
@@ -70,10 +75,6 @@ module AppleTvConverter
       %Q[#{show}#{" S#{season.to_s.rjust(2, '0')}E#{number.to_s.rjust(2, '0')}" if is_tv_show_episode?}]
     end
 
-    def mkv_data
-      @mkv_data ||= MKV::Movie.new(original_filename)
-    end
-
     def is_tv_show_episode?
       !season.nil? && !number.nil?
     end
@@ -82,16 +83,35 @@ module AppleTvConverter
       !is_tv_show_episode?
     end
 
-    def is_mkv?
-      ffmpeg_data.container =~ /matroska/i rescue File.extname(original_filename).downcase == '.mkv'
-    end
-
     def is_mp4?
       ffmpeg_data.container =~ /mp4/ rescue File.extname(original_filename) =~ /\.(m4v|mp4)$/
     end
 
     def is_valid?
       ffmpeg_data.valid?
+    end
+
+    def has_embedded_subtitles?(languages = [])
+      languages = languages.map { |l| l.downcase.to_sym }
+      ffmpeg_data.streams.select { |stream| stream.type == :subtitle && (languages.empty? || languages.include?(stream.language.downcase.to_sym)) }.any?
+    end
+
+    def streams(type = nil)
+      @streams ||= ffmpeg_data.streams
+      return @streams.select { |stream| stream.type == type } if type
+      return @streams
+    end
+
+    def video_streams
+      streams :video
+    end
+
+    def audio_streams
+      streams :audio
+    end
+
+    def subtitle_streams
+      streams :subtitle
     end
 
     def needs_audio_conversion?
@@ -103,7 +123,7 @@ module AppleTvConverter
     end
 
     def needs_subtitles_conversion?
-      is_mkv? && mkv_data.tracks.select {|t| t.type =~ /subtitles?/ }.any?
+      return ffmpeg_data.subtitle_streams.any?
     end
 
     def needs_transcoding?

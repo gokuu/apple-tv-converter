@@ -4,9 +4,8 @@ Command line utility to convert media to a format playable on the AppleTV. Suppo
 
 ## On Mac OSX
 
-- Uses [ffmpeg](http://ffmpeg.org) to encode video and audio
+- Uses [ffmpeg](http://ffmpeg.org) to encode video and audio, as well as extracting embedded subtitles
 - Uses [Subler](http://code.google.com/p/subler/)'s command line interface to add the subtitles and set the iTunes metadata tags 
-- Uses [MKVToolNix](http://www.bunkus.org/videotools/mkvtoolnix/) to extract the embedded subtitles from MKV files 
 
 # Command line usage
 

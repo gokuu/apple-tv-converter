@@ -5,17 +5,32 @@ module AppleTvConverter
     def extract_subtitles(media, languages)
       puts "* Extracting subtitles"
 
-      if media.mkv_data.has_subtitles?(languages)
+      languages.map!(&:to_sym)
+
+      if media.has_embedded_subtitles?(languages)
         last_destination_filename = nil
 
-        media.mkv_data.extract_subtitles({ :destination_dir => File.dirname(media.original_filename), :language => languages }) do |progress, elapsed, destination_filename|
-          puts "" if last_destination_filename && last_destination_filename != destination_filename
-          last_destination_filename = destination_filename
+        options = "-scodec subrip"
 
-          printf "\r" + "  * #{destination_filename}: Progress: #{progress.to_s.rjust(3)}%% (#{(elapsed / 60).to_s.rjust(2, '0')}:#{(elapsed % 60).to_s.rjust(2, '0')})     "
+        media.ffmpeg_data.streams.each do |stream|
+          next unless stream.type == :subtitle && (languages.empty? || languages.include?(stream.language.to_sym))
+          filename = File.join(File.dirname(media.original_filename), "#{File.basename(media.original_filename).gsub(File.extname(media.original_filename), %Q[.#{stream.stream_number}.#{stream.language}.srt])}")
+
+          begin
+            printf "  * #{File.basename(filename)}: Progress:     0%"
+            start_time = Time.now.to_i
+            transcoded = media.ffmpeg_data.transcode(filename, "#{options} -map #{stream.input_number}:#{stream.stream_number}", :extract_subtitles => true) do |progress|
+              elapsed = Time.now.to_i - start_time
+              printf "\r" + (" " * 40)
+              printf "\r  * #{File.basename(filename)}: Progress: #{(progress * 100).round(2).to_s.rjust(6)}%% (#{(elapsed / 60).to_s.rjust(2, '0')}:#{(elapsed % 60).to_s.rjust(2, '0')})     "
+            end
+            puts ""
+          rescue Interrupt
+            puts "\nProcess canceled!"
+            exit!
+          end
         end
 
-        puts ""
         puts "  * Extracted all subtitles"
       else
         puts "  * No subtitles to extract"
@@ -40,13 +55,13 @@ module AppleTvConverter
 
         if media.needs_audio_conversion?
           options[:extra] << " -af volume=2.000000" # Increase the volume when transcoding
-          options[:extra] << " -ac #{media.ffmpeg_data.audio_channels} -ar #{media.ffmpeg_data.audio_sample_rate} -ab #{[448, media.ffmpeg_data.audio_bitrate].min}k" if media.ffmpeg_data.audio_codec =~ /mp3/i
+          options[:extra] << " -ac #{media.ffmpeg_data.audio_channels} -ar #{media.ffmpeg_data.audio_sample_rate} -ab #{[448, (media.ffmpeg_data.audio_bitrate || 1000000)].min}k" if media.ffmpeg_data.audio_codec =~ /mp3/i
         end
 
-        # If the file is a MKV file, map all tracks but subtitles when transcoding
-        if media.is_mkv?
-          media.mkv_data.tracks.each do |track|
-            options[:map] << " -map 0:#{track.mkv_info_id}" if !track.is_subtitle? && (track.is_video? || (track.is_audio? && (languages.nil? || languages.empty? || languages.include?(track.language))))
+        # If the file has more than one audio track, map all tracks but subtitles when transcoding
+        if media.audio_streams.length > 0
+          media.streams.each do |stream|
+            options[:map] << " -map #{stream.input_number}:#{stream.stream_number}" if stream.type == :video || (stream.type == :audio && (languages.nil? || languages.empty? || languages.include?(track.language)))
           end
         end
 

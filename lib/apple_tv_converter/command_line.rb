@@ -68,7 +68,7 @@ module AppleTvConverter
             raise ArgumentError.new("Path not found: #{dir}") unless File.exists?(dir)
             raise ArgumentError.new("Path is not a directory: #{dir}") unless File.directory?(dir)
 
-            options.media.push *(Dir[File.join(dir, '**', '*.{mp4,avi,mkv,m4v,m2ts}')].map do |file|
+            options.media.push *(Dir[File.join(dir, '**', '*.{avi,mkv,m4v,m2ts,ogg,ogm,mp4}')].map do |file|
               parse_filename(file)
             end.compact)
           end

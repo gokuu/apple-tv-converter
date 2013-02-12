@@ -13,7 +13,6 @@ module AppleTvConverter
 
       AppleTvConverter.logger.level = Logger::ERROR
       FFMPEG.logger.level = Logger::ERROR
-      MKV.logger.level = Logger::ERROR
     end
 
     def process_media(media)
@@ -28,24 +27,21 @@ module AppleTvConverter
         puts "* Genre: #{media.genre}"
       end
 
-      if media.is_mkv?
-        puts "* #{media.mkv_data.tracks.select {|t| t.type == 'audio'}.length} audio track(s)"
-
-        if media.mkv_data.tracks.select {|t| t.type == 'audio' }.any?
-          media.mkv_data.tracks.select {|t| t.type == 'audio' }.each do |audio|
-            language_code = audio.language || 'und'
-            language_name = get_language_name(language_code)
-            puts "  * #{language_code} - #{language_name.nil? ? 'Unknown (ignoring)' : language_name}"
-          end
+      puts "* #{media.audio_streams.length} audio track(s)"
+      if media.audio_streams.any?
+        media.audio_streams.each do |audio|
+          language_code = audio.language || 'und'
+          language_name = get_language_name(language_code)
+          puts "  * #{language_code} - #{language_name.nil? ? 'Unknown (ignoring)' : language_name}"
         end
-        puts "* #{media.mkv_data.tracks.select {|t| ['subtitle', 'subtitles'].include?(t.type) }.length} embedded subtitle track(s)"
+      end
 
-        if media.mkv_data.tracks.select {|t| ['subtitle', 'subtitles'].include?(t.type) }.any?
-          media.mkv_data.tracks.select {|t| ['subtitle', 'subtitles'].include?(t.type) }.each do |subtitle|
-            language_code = subtitle.language || 'und'
-            language_name = get_language_name(language_code)
-            puts "  * #{language_code} - #{language_name.nil? ? 'Unknown (ignoring)' : language_name}"
-          end
+      puts "* #{media.subtitle_streams.length} embedded subtitle track(s)"
+      if media.subtitle_streams.any?
+        media.subtitle_streams.each do |subtitle|
+          language_code = subtitle.language || 'und'
+          language_name = get_language_name(language_code)
+          puts "  * #{language_code} - #{language_name.nil? ? 'Unknown (ignoring)' : language_name}"
         end
       end
 
@@ -59,7 +55,7 @@ module AppleTvConverter
         end
       end
 
-      @adapter.extract_subtitles(media, @options.languages) if media.is_mkv? && !@options.skip_subtitles
+      @adapter.extract_subtitles(media, @options.languages) if !@options.skip_subtitles && media.subtitle_streams.any? && media.needs_transcoding?
 
       if @options.skip_transcoding || @adapter.transcode(media, @options.languages)
         @adapter.add_subtitles(media) unless @options.skip_subtitles

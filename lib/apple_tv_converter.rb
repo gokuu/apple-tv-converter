@@ -5,7 +5,6 @@ require 'stringio'
 require 'shellwords'
 require 'open3'
 require 'streamio-ffmpeg'
-require 'mkv'
 require 'awesome_print'
 require 'fileutils'
 require 'language_list'
@@ -74,6 +73,8 @@ module AppleTvConverter
   end
 
   def get_language_name(language_code)
+    return language_code if language_code.length > 3
+
     # ??? - English
     # ara - Arabic
     # bul - Bulgarian
