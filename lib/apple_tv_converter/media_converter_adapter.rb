@@ -55,7 +55,11 @@ module AppleTvConverter
 
         if media.needs_audio_conversion?
           options[:extra] << " -af volume=2.000000" # Increase the volume when transcoding
-          options[:extra] << " -ac #{media.ffmpeg_data.audio_channels} -ar #{media.ffmpeg_data.audio_sample_rate} -ab #{[448, (media.ffmpeg_data.audio_bitrate || 1000000)].min}k" if media.ffmpeg_data.audio_codec =~ /mp3/i
+          if media.ffmpeg_data.audio_codec =~ /mp3/i
+            audio_bitrate = media.ffmpeg_data.audio_channels == 2 ? 128 : 448
+            options[:extra] << " -ac #{media.ffmpeg_data.audio_channels} -ar #{media.ffmpeg_data.audio_sample_rate}"
+            options[:extra] << " -ab #{[audio_bitrate, (media.ffmpeg_data.audio_bitrate || 1000000)].min}k"
+          end
         end
 
         # If the file has more than one audio track, map all tracks but subtitles when transcoding
