@@ -45,6 +45,10 @@ module AppleTvConverter
       @converted_filename = value
     end
 
+    def backup_filename
+      @backup_filename ||= "#{self.original_filename}.backup"
+    end
+
     def converted_filename_with_subtitles
       @converted_filename_with_subtitles ||= self.original_filename.gsub(/\.(mkv|avi|m4v)/, '_subtitled.mp4')
     end
@@ -89,6 +93,10 @@ module AppleTvConverter
 
     def is_valid?
       ffmpeg_data.valid?
+    end
+
+    def backup!
+      FileUtils.cp original_filename, backup_filename
     end
 
     def has_embedded_subtitles?(languages = [])

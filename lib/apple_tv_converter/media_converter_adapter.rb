@@ -126,9 +126,11 @@ module AppleTvConverter
           end
         end
 
-        # Always clean up subtitles and artwork
+        # Always clean up subtitles and artwork, and backup
         FileUtils.rm(media.artwork_filename) if File.exists?(media.artwork_filename)
         FileUtils.rm_r list_files(media.original_filename.gsub(File.extname(media.original_filename), '*.srt'))
+        FileUtils.rm(media.backup_filename) if File.exists?(media.backup_filename)
+
 
         puts " [DONE]"
       rescue
