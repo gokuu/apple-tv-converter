@@ -19,7 +19,7 @@ module AppleTvConverter
           begin
             printf "  * #{File.basename(filename)}: Progress:     0%"
             start_time = Time.now.to_i
-            transcoded = media.ffmpeg_data.transcode(filename, "#{options} -map #{stream.input_number}:#{stream.stream_number}", :extract_subtitles => true) do |progress|
+            transcoded = media.ffmpeg_data.transcode(filename, "#{options} -map #{stream.input_number}:#{stream.stream_number}", :validate_output => false) do |progress|
               elapsed = Time.now.to_i - start_time
               printf "\r" + (" " * 40)
               printf "\r  * #{File.basename(filename)}: Progress: #{(progress * 100).round(2).to_s.rjust(6)}%% (#{(elapsed / 60).to_s.rjust(2, '0')}:#{(elapsed % 60).to_s.rjust(2, '0')})     "
@@ -50,22 +50,30 @@ module AppleTvConverter
 
         # Better video and audio transcoding quality
         if media.needs_video_conversion?
-          options[:extra] << ' -mbd rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -g 300 -pass 1 -q:v 1 -r 23.98'
+          # Ensure divisible by 2 width and height
+          dimensions = "-s #{(media.ffmpeg_data.width % 2 > 0) ? (media.ffmpeg_data.width + 1) : media.ffmpeg_data.width}x#{(media.ffmpeg_data.height % 2 > 0) ? (media.ffmpeg_data.height + 1) : media.ffmpeg_data.height}" if media.ffmpeg_data.width % 2 > 0 || media.ffmpeg_data.height % 2 > 0
+
+          options[:extra] << " #{dimensions} -mbd rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -g 300 -pass 1 -q:v 1 -r 23.98"
         end
 
         if media.needs_audio_conversion?
-          options[:extra] << " -af volume=2.000000" # Increase the volume when transcoding
           if media.ffmpeg_data.audio_codec =~ /mp3/i
-            audio_bitrate = media.ffmpeg_data.audio_channels == 2 ? 128 : 448
-            options[:extra] << " -ac #{media.ffmpeg_data.audio_channels} -ar #{media.ffmpeg_data.audio_sample_rate}"
-            options[:extra] << " -ab #{[audio_bitrate, (media.ffmpeg_data.audio_bitrate || 1000000)].min}k"
+            audio_bitrate = 128 if media.ffmpeg_data.audio_channels == 2
+          elsif media.ffmpeg_data.audio_codec =~ /pcm_s16le/i
+            audio_bitrate = 128
           end
+
+          audio_bitrate ||= media.ffmpeg_data.audio_bitrate || 448
+
+          options[:extra] << " -af volume=2.000000" # Increase the volume when transcoding
+          options[:extra] << " -ac #{media.ffmpeg_data.audio_channels} -ar #{media.ffmpeg_data.audio_sample_rate}"
+          options[:extra] << " -ab #{[audio_bitrate, (media.ffmpeg_data.audio_bitrate || 1000000)].min}k"
         end
 
         # If the file has more than one audio track, map all tracks but subtitles when transcoding
         if media.audio_streams.length > 0
           media.streams.each do |stream|
-            options[:map] << " -map #{stream.input_number}:#{stream.stream_number}" if stream.type == :video || (stream.type == :audio && (languages.nil? || languages.empty? || languages.include?(track.language)))
+            options[:map] << " -map #{stream.input_number}:#{stream.stream_number}" if stream.type == :video || (stream.type == :audio && (languages.nil? || languages.empty? || languages.include?(stream.language)))
           end
         end
 

@@ -97,6 +97,7 @@ module AppleTvConverter
     # kor - Korean
     # lav - Latvian
     # lit - Lithuanian
+    # may - Malay? -> ignore?
     # nor - Norwegian
     # pol - Polish
     # por - Portuguese
@@ -118,7 +119,8 @@ module AppleTvConverter
       'ger' => 'deu',
       'gre' => 'ell',
       'ice' => 'isl',
-      'rum' => 'ron'
+      'rum' => 'ron',
+      'may' => nil
     }
 
     language_code = language_code_mappings.has_key?(language_code) ? language_code_mappings[language_code] : language_code
@@ -127,6 +129,7 @@ module AppleTvConverter
 
     language = ::LanguageList::LanguageInfo.find_by_iso_639_3(language_code)
 
-    return language.name
+    return language.name unless language.nil?
+    return nil
   end
 end

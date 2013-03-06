@@ -7,12 +7,16 @@ module AppleTvConverter
       ['srt', 'sub', 'ssa', 'ass']
     end
 
+    def self.ignored_extensions
+      ['nfo', 'jpg', 'png', 'bmp', 'sfv']
+    end
+
     def original_filename=(value)
       @original_filename = value
 
       if @original_filename =~ /.*?\.mp4$/
         Dir[@original_filename.gsub(File.extname(@original_filename), '*')].each do |file|
-          if @original_filename != file && !Media.subtitle_extensions.include?(file.downcase.gsub(/.*\./, ''))
+          if @original_filename != file && !(Media.subtitle_extensions + Media.ignored_extensions).include?(file.downcase.gsub(/.*\./, ''))
             @original_filename = file
             break
           end
