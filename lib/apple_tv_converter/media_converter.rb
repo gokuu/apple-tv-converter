@@ -59,6 +59,10 @@ module AppleTvConverter
 
       if @options.skip_transcoding || @adapter.transcode(media, @options.languages)
         @adapter.add_subtitles(media) unless @options.skip_subtitles
+        unless @options.skip_metadata || !@options.check_imdb
+          media.imdb_id = @options.imdb_id
+          @adapter.get_imdb_info(media)
+        end
         @adapter.tag(media) unless @options.skip_metadata
 
         @adapter.add_to_itunes media if @options.add_to_itunes

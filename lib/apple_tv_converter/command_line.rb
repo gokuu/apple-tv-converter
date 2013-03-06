@@ -37,6 +37,8 @@ module AppleTvConverter
         options.skip_metadata = false
         options.skip_cleanup = false
         options.add_to_itunes = false
+        options.check_imdb = false
+        options.imdb_id = nil
         options.languages = []
         options.media = []
 
@@ -78,8 +80,16 @@ module AppleTvConverter
             end.compact)
           end
 
-          opts.on('--itunes', "Add processed file to iTunes library, if it isn't there yet") do |i|
+          opts.on('--itunes', "Add processed file to iTunes library, if it isn't present yet") do |i|
             options.add_to_itunes = true
+          end
+
+          opts.on('--imdb [ID]', Integer,
+              "Gather data from IMDB (optionally specifying movie id. If an id isn't specified",
+              "the program looks for a file on the same directory, named <id>.imdb)"
+            ) do |id|
+            options.check_imdb = true
+            options.imdb_id = id if id
           end
 
           opts.separator ""

@@ -115,6 +115,21 @@ module AppleTvConverter
       raise NotImplementedYetException
     end
 
+    def get_imdb_info(media)
+      printf "* Getting info from IMDB"
+
+      if media.imdb_id
+        media.imdb_movie = Imdb::Movie.new(media.imdb_id)
+      elsif Dir[File.join(File.dirname(media.original_filename), '*.imdb')].any?
+        media.imdb_movie = Imdb::Movie.new(File.basename(Dir[File.join(File.dirname(media.original_filename), '*.imdb')].first).gsub(/\.imdb$/i, ''))
+      else
+        puts " [SKIPPING - COULDN'T FIND IMDB ID]"
+        return
+      end
+
+      puts " [DONE]"
+    end
+
     def tag(media)
       raise NotImplementedYetException
     end

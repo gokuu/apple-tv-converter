@@ -1,6 +1,7 @@
 module AppleTvConverter
   class Media
     attr_accessor :show, :season, :number
+    attr_accessor :imdb_movie, :imdb_id
     attr_reader :original_filename
 
     def self.subtitle_extensions
@@ -8,7 +9,7 @@ module AppleTvConverter
     end
 
     def self.ignored_extensions
-      ['nfo', 'jpg', 'png', 'bmp', 'sfv']
+      ['nfo', 'jpg', 'png', 'bmp', 'sfv', 'imdb']
     end
 
     def original_filename=(value)
