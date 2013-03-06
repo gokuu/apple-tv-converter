@@ -19,6 +19,8 @@ Usage: apple-tv-converter [options] [file]
     -l, --languages eng,por,...      Only keep audio and subtitles in the specified languages
     -d, --dir [DIRECTORY]            Process all files in DIRECTORY recursively
         --itunes                     Add processed file to iTunes library, if it isn't there yet
+        --imdb [ID]                  Gather data from IMDB (optionally specifying movie id. If an id isn't specified
+                                     the program looks for a file on the same directory, named <id>.imdb)
 
 Common options:
     -h, --help                       Show this message
