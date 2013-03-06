@@ -68,7 +68,12 @@ module AppleTvConverter
             raise ArgumentError.new("Path not found: #{dir}") unless File.exists?(dir)
             raise ArgumentError.new("Path is not a directory: #{dir}") unless File.directory?(dir)
 
-            options.media.push *(Dir[File.join(dir, '**', '*.{avi,mkv,m4v,m2ts,ogg,ogm,mp4}')].map do |file|
+            found_files = Dir[File.join(dir, '**', '*')].delete_if do |f|
+              # Skip files with subtitle or ignored extensions
+              [AppleTvConverter::Media.subtitle_extensions + AppleTvConverter::Media.ignored_extensions].include?(File.extname(f).gsub(/\./, ''))
+            end
+
+            options.media.push *(found_files.map do |file|
               parse_filename(file)
             end.compact)
           end
@@ -103,30 +108,39 @@ module AppleTvConverter
       end
 
       def parse_filename(file)
-        return nil unless FFMPEG::Movie.new(file).valid?
-
-        # match
-        # [0] - Full string
-        # [1] - Show name
         begin
-          e = AppleTvConverter::Media.new
-          # Extract name
-          match = File.dirname(file).match(/.*\/(.*?)(?:S(\d+))?$/i)
-          e.show = match[1].strip
+          return nil unless FFMPEG::Movie.new(file).valid?
 
-          # Extract season an media number
-          match = File.basename(file).match(/.*S?(\d+)[Ex](\d+).*/i)
-          if match
-            e.season = match[1].to_i if match[1]
-            e.number = match[2].to_i if match[2]
+          # match
+          # [0] - Full string
+          # [1] - Show name
+          begin
+            e = AppleTvConverter::Media.new
+            # Extract name
+            match = File.dirname(file).match(/.*\/(.*?)(?:S(\d+))?$/i)
+            e.show = match[1].strip
+
+            # Extract season an media number
+            match = File.basename(file).match(/.*?(?:S(\d+)E(\d+)|(\d+)x(\d+)).*/i)
+            if match
+              e.season = (match[1] || match[3]).to_i
+              e.number = (match[2] || match[4]).to_i
+            end
+            e.original_filename = file
+
+            return e
+          rescue => exc
+            puts "Couldn't parse filename, skipping: #{File.basename(file)}"
+            return nil
           end
-          e.original_filename = file
+        rescue Errno::ENOENT
+          puts "File not found: #{file}"
+        rescue Exception => e
+          puts e
 
-          return e
-        rescue => exc
-          puts "Couldn't parse filename, skipping: #{File.basename(file)}"
-          return nil
+          exit!
         end
+
       end
   end
 end
