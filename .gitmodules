@@ -1,0 +1,3 @@
+[submodule "gems/streamio-ffmpeg"]
+	path = gems/streamio-ffmpeg
+	url = git@github.com:gokuu/streamio-ffmpeg.git

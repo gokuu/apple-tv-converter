@@ -1,10 +1,12 @@
 $LOAD_PATH.unshift File.dirname(__FILE__)
 
+require '../gems/streamio-ffmpeg/lib/streamio-ffmpeg'
+
 require 'logger'
 require 'stringio'
 require 'shellwords'
 require 'open3'
-require 'streamio-ffmpeg'
+# require 'streamio-ffmpeg'
 require 'awesome_print'
 require 'fileutils'
 require 'language_list'
