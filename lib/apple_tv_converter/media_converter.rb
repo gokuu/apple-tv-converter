@@ -13,6 +13,7 @@ module AppleTvConverter
 
       AppleTvConverter.logger.level = Logger::ERROR
       FFMPEG.logger.level = Logger::ERROR
+      FFMPEG::Transcoder.timeout = 300
     end
 
     def process_media(media)
