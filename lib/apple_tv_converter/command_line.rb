@@ -71,8 +71,8 @@ module AppleTvConverter
             raise ArgumentError.new("Path is not a directory: #{dir}") unless File.directory?(dir)
 
             found_files = Dir[File.join(dir, '**', '*')].delete_if do |f|
-              # Skip files with subtitle or ignored extensions
-              [AppleTvConverter::Media.subtitle_extensions + AppleTvConverter::Media.ignored_extensions].include?(File.extname(f).gsub(/\./, ''))
+              # Skip files with subtitle or ignored extensions, or directories
+              File.directory?(f) || [AppleTvConverter::Media.subtitle_extensions + AppleTvConverter::Media.ignored_extensions].flatten.include?(File.extname(f).gsub(/\./, '').downcase)
             end
 
             options.media.push *(found_files.map do |file|
