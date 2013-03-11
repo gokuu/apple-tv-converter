@@ -31,12 +31,12 @@ module AppleTvConverter
     def tag(media)
       metadata = ''
       if media.imdb_movie
-        metadata << %Q[{Name: #{media.imdb_movie.title}}]
-        metadata << %Q[{Genre: #{media.imdb_movie.genres.first}}]
-        metadata << %Q[{Description: #{media.imdb_movie.plot.gsub(/"/, '\\"')}}]
+        metadata << %Q[{Name: #{media.imdb_movie.title.gsub(/"/, '\\"')}}]
+        metadata << %Q[{Genre: #{media.imdb_movie.genres.first.gsub(/"/, '\\"')}}]
+        metadata << %Q[{Description: #{media.imdb_movie.plot.gsub(/"/, '\\"')}}] if media.imdb_movie.plot
         metadata << %Q[{Release Date: #{media.imdb_movie.year}}]
-        metadata << %Q[{Director: #{media.imdb_movie.director.first}}]
-        metadata << %Q[{Codirector: #{media.imdb_movie.director[1]}}] if media.imdb_movie.director.length > 1
+        metadata << %Q[{Director: #{(media.imdb_movie.director.first || '').gsub(/"/, '\\"')}}]
+        metadata << %Q[{Codirector: #{media.imdb_movie.director[1].gsub(/"/, '\\"')}}] if media.imdb_movie.director.length > 1
 
         if media.imdb_movie.poster
           open(media.imdb_movie.poster) do |f|
@@ -75,7 +75,7 @@ module AppleTvConverter
 
       printf "* Tagging"
 
-      output, exit_status = Open3.popen3(command_line) { |stdin, stdout, stderr, wait_thr| [ stdout.read, wait_thr.value ] }
+      output, error, exit_status = Open3.popen3(command_line) { |stdin, stdout, stderr, wait_thr| [ stdout.read, stderr.read, wait_thr.value ] }
 
       puts exit_status.exitstatus == 0 ? " [DONE]" : " [ERROR]"
 
