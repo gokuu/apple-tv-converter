@@ -1,6 +1,6 @@
 $LOAD_PATH.unshift File.dirname(__FILE__)
 
-require '../gems/streamio-ffmpeg/lib/streamio-ffmpeg'
+require File.expand_path(File.join(File.dirname(__FILE__), '..', 'gems', 'streamio-ffmpeg', 'lib', 'streamio-ffmpeg'))
 
 require 'logger'
 require 'stringio'

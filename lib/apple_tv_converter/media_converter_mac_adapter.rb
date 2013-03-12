@@ -10,10 +10,12 @@ module AppleTvConverter
 
           language_name = get_language_name(language_code)
 
-          command_line = "./SublerCLI "
-          command_line << %Q[-source "#{subtitle_filename}" ]
-          command_line << %Q[-language "#{language_name}" ]
-          command_line << %Q[-dest "#{media.converted_filename}"]
+          command_line = [
+            File.expand_path(File.join(File.dirname(__FILE__), '..', '..', 'bin', 'SublerCLI')),
+            %Q[-source "#{subtitle_filename}" ],
+            %Q[-language "#{language_name}" ],
+            %Q[-dest "#{media.converted_filename}"]
+          ].join(' ')
 
           AppleTvConverter.logger.debug "Executing:"
           AppleTvConverter.logger.debug command_line
@@ -68,7 +70,11 @@ module AppleTvConverter
 
       end
 
-      command_line = %Q[./SublerCLI -metadata "#{metadata}" -dest "#{media.converted_filename}"]
+      command_line = [
+        File.expand_path(File.join(File.dirname(__FILE__), '..', '..', 'bin', 'SublerCLI')),
+        %Q[-metadata "#{metadata}"],
+        %Q[-dest "#{media.converted_filename}"]
+      ].join(' ')
 
       AppleTvConverter.logger.debug "Executing:"
       AppleTvConverter.logger.debug command_line
