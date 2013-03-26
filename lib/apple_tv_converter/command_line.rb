@@ -84,7 +84,7 @@ module AppleTvConverter
             options.add_to_itunes = true
           end
 
-          opts.on('--imdb [ID]', Integer,
+          opts.on('--imdb [ID]',
               "Gather data from IMDB (optionally specifying movie id. If an id isn't specified",
               "the program looks for a file on the same directory, named <id>.imdb)"
             ) do |id|
