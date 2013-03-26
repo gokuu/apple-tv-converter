@@ -58,9 +58,14 @@ module AppleTvConverter
 
         if media.needs_audio_conversion?
           if media.ffmpeg_data.audio_codec =~ /mp3/i
+            # Ensure that destination audio bitrate is 128k for Stereo MP3 (couldn't convert with higher bitrate)
             audio_bitrate = 128 if media.ffmpeg_data.audio_channels == 2
           elsif media.ffmpeg_data.audio_codec =~ /pcm_s16le/i
+            # Ensure that destination audio bitrate is 128k for PCM signed 16-bit little-endian (couldn't convert with higher bitrate)
             audio_bitrate = 128
+          elsif media.ffmpeg_data.audio_codec =~ /ac3/i
+            # Ensure that maximum destination audio bitrate is 576k for AC3 (couldn't convert with higher bitrate)
+            audio_bitrate = [media.ffmpeg_data.audio_bitrate || 576, 576].min
           end
 
           audio_bitrate ||= media.ffmpeg_data.audio_bitrate || 448
