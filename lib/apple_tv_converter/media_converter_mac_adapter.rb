@@ -11,7 +11,7 @@ module AppleTvConverter
           language_name = get_language_name(language_code)
 
           command_line = [
-            File.expand_path(File.join(File.dirname(__FILE__), '..', '..', 'bin', 'SublerCLI')),
+            Shellwords.escape(File.expand_path(File.join(File.dirname(__FILE__), '..', '..', 'bin', 'SublerCLI'))),
             %Q[-source "#{subtitle_filename}" ],
             %Q[-language "#{language_name}" ],
             %Q[-dest "#{media.converted_filename}"]
@@ -71,7 +71,7 @@ module AppleTvConverter
       end
 
       command_line = [
-        File.expand_path(File.join(File.dirname(__FILE__), '..', '..', 'bin', 'SublerCLI')),
+        Shellwords.escape(File.expand_path(File.join(File.dirname(__FILE__), '..', '..', 'bin', 'SublerCLI'))),
         %Q[-metadata "#{metadata}"],
         %Q[-dest "#{media.converted_filename}"]
       ].join(' ')
