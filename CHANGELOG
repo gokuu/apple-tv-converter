@@ -1,3 +1,26 @@
+v0.4.1
+------
+* Automatic download of subtitles via opensubtitles.org
+* Automatic infer IMDB id from opensubtitles.org
+
+v0.3.3
+------
+* Fixed SublerCLI call
+
+v0.3.2
+------
+* Fixed AC3 conversion failing in some cases
+
+v0.3.1
+------
+* Support for IMDB ids starting with 0
+
+v0.3.0
+------
+* Removed dependency on MKV gem and MKVToolnix
+* Added support for converting OGG videos
+* Other fixes
+
 v0.2.0
 ------
 * Add to iTunes

@@ -1,6 +1,7 @@
 # apple-tv-converter
 
 Command line utility to convert media to a format playable on the AppleTV. Supports embedding subtitles and sets metadata according to the media file.
+Now, it also supports automatically downloading subtitles from [opensubtitles.org](http://www.opensubtitles.org) and, in the same process, infering the movie's IMDB id for metadata.
 
 ## On Mac OSX
 
@@ -18,9 +19,10 @@ Usage: apple-tv-converter [options] [file]
         --no-cleanup                 Don't cleanup the source files after processing
     -l, --languages eng,por,...      Only keep audio and subtitles in the specified languages
     -d, --dir [DIRECTORY]            Process all files in DIRECTORY recursively
-        --itunes                     Add processed file to iTunes library, if it isn't there yet
+        --itunes                     Add processed file to iTunes library, if it isn't present yet
         --imdb [ID]                  Gather data from IMDB (optionally specifying movie id. If an id isn't specified
                                      the program looks for a file on the same directory, named <id>.imdb)
+        --os                         Download subtitles and infer IMDB ID from opensubtitles.org
 
 Common options:
     -h, --help                       Show this message
@@ -43,6 +45,11 @@ Common options:
     - `/Home Movie 1/movie.srt` (language 'Unknown')
     - `/Home Movie 1/movie.eng.srt` (language 'English')
     - `/Home Movie 1/movie.2.por.srt` (language 'Portuguese'. Note: the _2_ is an mkvinfo id when extracted from an MKV movie)
+
+## Thanks
+
+**Subtitles service powered by www.OpenSubtitles.org**
+![pensubtitles.org logo](http://static.opensubtitles.org/gfx/logo-transparent.png)
 
 
 # TODO
