@@ -2,6 +2,28 @@ module AppleTvConverter
   class MediaConverterAdapter
     include AppleTvConverter
 
+    def search_subtitles(media, languages)
+      # Load the subtitles into memory and get IMDB id from them
+      AppleTvConverter::SubtitlesFetcher::Opensubtitles.new(languages) do |fetcher|
+        fetcher.search_subtitles media do |subtitles|
+          media.imdb_id ||= subtitles.first['IDMovieImdb']
+        end
+      end
+    end
+
+    def download_subtitles(media, languages)
+      puts "* Downloading subtitles"
+      AppleTvConverter::SubtitlesFetcher::Opensubtitles.new(languages) do |fetcher|
+        fetcher.download_subtitles media do |step, subtitles|
+          case step
+            when :downloading   then printf "  * Downloading: \##{subtitles['IDSubtitleFile']} (#{get_language_name(subtitles['SubLanguageID'])}) - #{subtitles['SubFileName']}"
+            when :downloaded    then puts " [DONE]"
+          end
+        end
+      end
+      puts "  * All subtitles downloaded"
+    end
+
     def extract_subtitles(media, languages)
       puts "* Extracting subtitles"
 

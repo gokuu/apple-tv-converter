@@ -12,12 +12,18 @@ require 'fileutils'
 require 'language_list'
 require 'open-uri'
 require 'imdb'
+require "xmlrpc/client"
+require 'net/http'
+require 'uri'
+require 'base64'
 
 require 'apple_tv_converter/version'
 require 'apple_tv_converter/io_patch'
 require 'apple_tv_converter/command_line'
 require 'apple_tv_converter/media_converter'
 require 'apple_tv_converter/media'
+require 'apple_tv_converter/movie_hasher'
+require 'apple_tv_converter/subtitles_fetcher/opensubtitles'
 require 'apple_tv_converter/media_converter_adapter'
 require 'apple_tv_converter/media_converter_windows_adapter' if RUBY_PLATFORM =~ /(win|w)(32|64)$/
 require 'apple_tv_converter/media_converter_mac_adapter' if RUBY_PLATFORM =~ /(darwin)/

@@ -92,6 +92,10 @@ module AppleTvConverter
             options.imdb_id = id if id
           end
 
+          opts.on('--os', "Download subtitles and infer IMDB ID from opensubtitles.org") do |i|
+            options.download_subtitles = true
+          end
+
           opts.separator ""
           opts.separator "Common options:"
 

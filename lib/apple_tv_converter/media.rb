@@ -146,5 +146,19 @@ module AppleTvConverter
     def hd?
       ['1080p', '720p'].include?(quality)
     end
+
+    def movie_file_size
+      @movie_file_size ||= File.size(original_filename)
+    end
+
+    def movie_hash
+      @movie_hash ||= AppleTvConverter::MovieHasher.compute_hash(original_filename)
+    end
+
+    def get_new_subtitle_filename(language, subid = nil)
+      dir_name = File.dirname(original_filename)
+      existing_subtitle_counter = subid.nil? ? Dir[File.join(dir_name, '*.srt')].length : subid
+      return File.join(dir_name, File.basename(original_filename).gsub(File.extname(original_filename), ".#{existing_subtitle_counter}.#{language}.srt"))
+    end
   end
 end
