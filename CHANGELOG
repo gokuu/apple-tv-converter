@@ -1,6 +1,7 @@
-v0.4.3
+v0.4.4
 ------
 * Support Ruby v1.8.7
+* Fetch IMDB metadata for TV show episodes as well
 
 v0.4.1
 ------
