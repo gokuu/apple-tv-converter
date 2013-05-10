@@ -184,8 +184,8 @@ module AppleTvConverter
             raise e
           rescue Exception => e
             puts "Error:"
-            ap e
-            ap e.message
+            # ap e
+            # ap e.message
 
             raise e
           end
