@@ -24,7 +24,7 @@ module AppleTvConverter
 
           if RUBY_VERSION =~ /^1\.8/
             output, error = Open3.popen3(command_line) { |stdin, stdout, stderr| [ stdout.read, stderr.read ] }
-            puts error.strip == '' ? " [DONE]" : " [ERROR]"
+            puts error.strip == '' || error =~ /guessed encoding/i ? " [DONE]" : " [ERROR] #{error}"
           else
             output, error, exit_status = Open3.popen3(command_line) { |stdin, stdout, stderr, wait_thr| [ stdout.read, stderr.read, wait_thr.value ] }
             puts exit_status.exitstatus == 0 ? " [DONE]" : " [ERROR]"
@@ -37,9 +37,12 @@ module AppleTvConverter
 
     def tag(media)
       metadata = ''
+
       if media.imdb_movie
-        metadata << %Q[{Name: #{media.imdb_movie.title.gsub(/"/, '\\"')}}]
-        metadata << %Q[{Genre: #{media.imdb_movie.genres.first.gsub(/"/, '\\"')}}]
+        unless media.is_tv_show_episode?
+          metadata << %Q[{Name: #{media.imdb_movie.title.gsub(/"/, '\\"')}}]
+          metadata << %Q[{Genre: #{media.imdb_movie.genres.first.gsub(/"/, '\\"')}}]
+        end
         metadata << %Q[{Description: #{media.imdb_movie.plot.gsub(/"/, '\\"')}}] if media.imdb_movie.plot
         metadata << %Q[{Release Date: #{media.imdb_movie.year}}]
         metadata << %Q[{Director: #{(media.imdb_movie.director.first || '').gsub(/"/, '\\"')}}]
@@ -56,23 +59,18 @@ module AppleTvConverter
         end
       end
 
+      metadata << %Q[{HD Video: true}] if media.hd?
+
+      # Overwrite the name and genre to group the episode correctly
       if media.is_tv_show_episode?
+        metadata << %Q[{Name: #{media.show} S#{media.season.to_s.rjust(2, '0')}E#{media.number.to_s.rjust(2, '0')}}]
+        metadata << %Q[{Genre: #{media.genre}}]
         metadata << %Q[{TV Show: #{media.show}}]
         metadata << %Q[{TV Season: #{media.season}}]
         metadata << %Q[{TV Episode #: #{media.number}}]
-      end
-
-      metadata << %Q[{HD Video: true}] if media.hd?
-
-      if !media.imdb_movie
-        if media.is_tv_show_episode?
-          metadata << %Q[{Name: #{media.show} S#{media.season.to_s.rjust(2, '0')}E#{media.number.to_s.rjust(2, '0')}}]
-          metadata << %Q[{Genre: #{media.genre}}]
-        else
-          metadata << %Q[{Name: #{media.show}}]
-          metadata << %Q[{Genre: #{media.genre}}]
-        end
-
+      elsif !media.imdb_movie
+        metadata << %Q[{Name: #{media.show}}]
+        metadata << %Q[{Genre: #{media.genre}}]
       end
 
       command_line = [
