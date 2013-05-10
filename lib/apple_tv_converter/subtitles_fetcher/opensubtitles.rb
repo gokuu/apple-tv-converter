@@ -121,9 +121,8 @@ module AppleTvConverter
         end
 
         def filter_subtitles(data, media)
-          media_subtitles = data
-            .select { |s| s['SubFormat'].downcase == 'srt' } # Filter by format
-            .select { |s| languages.empty? || languages.include?(s['SubLanguageID']) } # Filter by language
+          media_subtitles = data.select { |s| s['SubFormat'].downcase == 'srt' } # Filter by format
+          media_subtitles = media_subtitles.select { |s| languages.empty? || languages.include?(s['SubLanguageID']) } # Filter by language
 
           exact_match = media_subtitles.select do |s|
             !File.basename(media.original_filename).downcase.index(s['MovieReleaseName'].downcase).nil? ||

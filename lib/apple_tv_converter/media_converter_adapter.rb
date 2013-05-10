@@ -44,7 +44,7 @@ module AppleTvConverter
             transcoded = media.ffmpeg_data.transcode(filename, "#{options} -map #{stream.input_number}:#{stream.stream_number}", :validate_output => false) do |progress|
               elapsed = Time.now.to_i - start_time
               printf "\r" + (" " * 40)
-              printf "\r  * #{File.basename(filename)}: Progress: #{(progress * 100).round(2).to_s.rjust(6)}%% (#{(elapsed / 60).to_s.rjust(2, '0')}:#{(elapsed % 60).to_s.rjust(2, '0')})     "
+              printf "\r  * #{File.basename(filename)}: Progress: #{(progress * 10000).round.to_s.gsub(/(\d{2})$/, '.\1').gsub(/^\./, '0.').rjust(6)}%% (#{(elapsed / 60).to_s.rjust(2, '0')}:#{(elapsed % 60).to_s.rjust(2, '0')})     "
             end
             puts ""
           rescue Interrupt
@@ -113,7 +113,7 @@ module AppleTvConverter
           transcoded = media.ffmpeg_data.transcode(media.converted_filename, options) do |progress|
             elapsed = Time.now.to_i - start_time
             printf "\r" + (" " * 40)
-            printf %Q[\r  * Progress: #{(progress * 100).round(2).to_s.rjust(6)}%% (#{(elapsed / 60).to_s.rjust(2, '0')}:#{(elapsed % 60).to_s.rjust(2, '0')})]
+            printf %Q[\r  * Progress: #{(progress * 10000).round.to_s.gsub(/(\d{2})$/, '.\1').gsub(/^\./, '0.').rjust(6)}%% (#{(elapsed / 60).to_s.rjust(2, '0')}:#{(elapsed % 60).to_s.rjust(2, '0')})]
           end
         rescue Interrupt
           puts "\nProcess canceled!"

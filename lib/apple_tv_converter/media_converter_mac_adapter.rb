@@ -21,9 +21,14 @@ module AppleTvConverter
           AppleTvConverter.logger.debug command_line
 
           printf "  * Adding #{language_name} subtitles"
-          output, exit_status = Open3.popen3(command_line) { |stdin, stdout, stderr, wait_thr| [ stdout.read, wait_thr.value] }
 
-          puts exit_status.exitstatus == 0 ? " [DONE]" : " [ERROR]"
+          if RUBY_VERSION =~ /^1\.8/
+            output, error = Open3.popen3(command_line) { |stdin, stdout, stderr| [ stdout.read, stderr.read ] }
+            puts error.strip == '' ? " [DONE]" : " [ERROR]"
+          else
+            output, error, exit_status = Open3.popen3(command_line) { |stdin, stdout, stderr, wait_thr| [ stdout.read, stderr.read, wait_thr.value ] }
+            puts exit_status.exitstatus == 0 ? " [DONE]" : " [ERROR]"
+          end
         end
       else
         puts "  * No subtitles found"
@@ -81,9 +86,13 @@ module AppleTvConverter
 
       printf "* Tagging"
 
-      output, error, exit_status = Open3.popen3(command_line) { |stdin, stdout, stderr, wait_thr| [ stdout.read, stderr.read, wait_thr.value ] }
-
-      puts exit_status.exitstatus == 0 ? " [DONE]" : " [ERROR]"
+      if RUBY_VERSION =~ /^1\.8/
+        output, error = Open3.popen3(command_line) { |stdin, stdout, stderr| [ stdout.read, stderr.read ] }
+        puts error.strip == '' ? " [DONE]" : " [ERROR]"
+      else
+        output, error, exit_status = Open3.popen3(command_line) { |stdin, stdout, stderr, wait_thr| [ stdout.read, stderr.read, wait_thr.value ] }
+        puts exit_status.exitstatus == 0 ? " [DONE]" : " [ERROR]"
+      end
 
       return output.strip.empty?
     end
