@@ -1,3 +1,7 @@
+v0.4.3
+------
+* Support Ruby v1.8.7
+
 v0.4.1
 ------
 * Automatic download of subtitles via opensubtitles.org
