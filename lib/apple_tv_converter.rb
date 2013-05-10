@@ -16,6 +16,7 @@ require "xmlrpc/client"
 require 'net/http'
 require 'uri'
 require 'base64'
+require 'zlib'
 
 require 'apple_tv_converter/version'
 require 'apple_tv_converter/io_patch'
