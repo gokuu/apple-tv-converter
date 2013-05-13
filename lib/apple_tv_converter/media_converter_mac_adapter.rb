@@ -44,7 +44,7 @@ module AppleTvConverter
           metadata << %Q[{Genre: #{media.imdb_movie.genres.first.gsub(/"/, '\\"')}}]
         end
         metadata << %Q[{Description: #{media.imdb_movie.plot.gsub(/"/, '\\"')}}] if media.imdb_movie.plot
-        metadata << %Q[{Release Date: #{media.imdb_movie.year}}]
+        metadata << %Q[{Release Date: #{media.imdb_movie.year}}] if media.imdb_movie.year > 0
         metadata << %Q[{Director: #{(media.imdb_movie.director.first || '').gsub(/"/, '\\"')}}]
         metadata << %Q[{Codirector: #{media.imdb_movie.director[1].gsub(/"/, '\\"')}}] if media.imdb_movie.director.length > 1
 
