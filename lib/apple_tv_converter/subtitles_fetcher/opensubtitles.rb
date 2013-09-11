@@ -20,75 +20,69 @@ module AppleTvConverter
       end
 
       def logout
-        begin
-          response = @server.call("LogOut", get_token)
-          parse_response! response
-          @token = nil if response[:success]
-        rescue EOFError
-          logout
-        rescue XMLRPC::FaultException => e
-          puts "Error:"
-          puts e.faultCode
-          puts e.faultString
-          raise e
-        end
+        response = make_call("LogOut", get_token)
+        parse_response! response
+        @token = nil if response[:success]
       end
 
       def search_subtitles(media, &block)
-        options = [
+        language_options = languages.map(&:to_s).join(',') if languages.any?
+        options = []
+
+        # Query by movie hash
+        options << {
           :moviehash => media.movie_hash.to_s,
           :moviebytesize => media.movie_file_size.to_s
-        ]
-        language_options = languages.map(&:to_s).join(',') if languages.any?
+        }
+        # Query by movie name
+        options << { :query => media.show }
+        # and IMDB id if present
+        options.last[:imdb_id] = media.imdb_id if media.imdb_id
 
-        options.first[:sublanguageid] = language_options if language_options
-        response = search_for_subtitles(media, options)
+        # Add common options
+        options.each do |query_option|
+          query_option[:sublanguageid] = language_options if language_options
+          query_option[:season] = media.season if media.is_tv_show_episode?
+          query_option[:episode] = media.number if media.is_tv_show_episode?
+        end
 
-        if response[:success]
-          if response['data']
+        options.each do |query_options|
+          response = search_for_subtitles(media, options)
+          if response[:success] && response['data']
             Opensubtitles.subtitles[media] = response['data']
             block.call response['data'] if block
-          else
-            # Could not find matches by hash, try by name (and season/episode)
-            options = [ :query => media.show ]
-
-            options.first[:season] = media.season if media.is_tv_show_episode?
-            options.first[:episode] = media.number if media.is_tv_show_episode?
-            options.first[:sublanguageid] = language_options if language_options
-
-            response = search_for_subtitles(media, options)
-
-            if response[:success] && response['data']
-              Opensubtitles.subtitles[media] = response['data']
-              block.call response['data'] if block
-            end
           end
         end
       end
 
+      def has_found_subtitles?(media)
+        (Opensubtitles.subtitles[media] && Opensubtitles.subtitles[media].any?) == true
+      end
+
       def download_subtitles(media, &block)
+        return unless has_found_subtitles? media
+
         data = Opensubtitles.subtitles[media]
         media_subtitles = filter_subtitles(data, media)
+
+        # If we have subtitles matched by moviehash, get only the first and ignore the rest
+        # otherwise, get all
+        media_subtitles = Hash[*media_subtitles.map { |language, subs| [language, [ subs.detect { |s| s['MatchedBy'] } || subs ].flatten ] }.flatten(1) ]
+
         block.call :search, media_subtitles if block
 
-        # We now have only one subtitle per language code, so start downloading
-        media_subtitles.each do |language_code, subtitle|
-          block.call :downloading, subtitle
-          download_subtitle(media, subtitle)
-          block.call :downloaded, subtitle
+        # We now have one or many subtitles per language code, so start downloading
+        media_subtitles.each do |language_code, subtitles|
+          subtitles.each do |subtitle|
+            block.call :downloading, subtitle
+            download_subtitle(media, subtitle)
+            block.call :downloaded, subtitle
+          end
         end
       end
 
       def status
-        begin
-          @server.call('ServerInfo')
-        rescue EOFError
-          status
-        rescue XMLRPC::FaultException => e
-          puts "Error:"
-          puts e.faultCode
-          puts e.faultString
-        end
+        make_call('ServerInfo')
       end
 
       private
@@ -100,19 +94,10 @@ module AppleTvConverter
         def logged_in? ; return !@token.nil? ; end
 
         def login
-          begin
-            response = @server.call("LogIn", '', '', '', USER_AGENT)
-            parse_response! response
+          response = make_call("LogIn", '', '', '', USER_AGENT)
+          parse_response! response
 
-            @token = response['token'] if response[:success]
-          rescue EOFError
-            login
-          rescue XMLRPC::FaultException => e
-            puts "Error:"
-            puts e.faultCode
-            puts e.faultString
-            raise e
-          end
+          @token = response['token'] if response[:success]
         end
 
         def get_token
@@ -120,80 +105,117 @@ module AppleTvConverter
           return @token
         end
 
-        def filter_subtitles(data, media)
-          media_subtitles = data.select { |s| s['SubFormat'].downcase == 'srt' } # Filter by format
-          media_subtitles = media_subtitles.select { |s| languages.empty? || languages.include?(s['SubLanguageID']) } # Filter by language
+        def normalize(string) ; return string.gsub(/[^0-9a-z ]/i, '').gsub(/\s+/, ' ').downcase.strip ; end
 
-          exact_match = media_subtitles.select do |s|
-            !File.basename(media.original_filename).downcase.index(s['MovieReleaseName'].downcase).nil? ||
-            !File.basename(media.original_filename).downcase.index(s['SubFileName'].gsub(/\..*?$/, '').downcase).nil?
+        def filter_subtitles(data, media)
+          # "MatchedBy" -> "moviehash"
+          # "MatchedBy" -> "imdbid"
+          # "MatchedBy" -> "fulltext"
+
+          # Define priorities by match type
+          data.each do |s|
+            s[:priority] = case s['MatchedBy']
+              when 'moviehash'  then 100
+              when 'imdbid'     then 200
+              when 'fulltext'   then 300
+              else                   400
+            end
           end
 
-          # We found exact matches on the movie name, so ignore the rest
-          media_subtitles = exact_match if exact_match.any?
+
+          # Order the subtitles first by lowest priority (my match)
+          # and then by download count (descending). This way, we'll get the
+          # best, top downloaded match on top
+          media_subtitles = data.sort { |c, d| [d[:priority], c['SubDownloadsCnt'].to_i] <=> [c[:priority], d['SubDownloadsCnt'].to_i] }.reverse
+
+
+          # Get only unique subtitle entries (we can have more than one)
+          # due to different 'MatchedBy'
+          media_subtitles = media_subtitles.uniq { |s| s['IDSubtitle'] }
+
+          # Filter by subtitles format (srt)
+          media_subtitles = media_subtitles.select { |s| s['SubFormat'].downcase == 'srt' }
+          # Filter by number of discs (1)
+          media_subtitles = media_subtitles.select { |s| s['SubSumCD'] == '1' }
+          # Filter by language
+          media_subtitles = media_subtitles.select { |s| languages.empty? || languages.include?(s['SubLanguageID']) }
+          # Filter by movie name (unless it's an episode, as the movie name can be the episode's title)
+          media_subtitles = media_subtitles.select { |s| s['MatchedBy'] == 'moviehash' || normalize(s['MovieName']) == normalize(media.show) } unless media.is_tv_show_episode?
+
+          # exact_match = media_subtitles.select do |s|
+          #   !File.basename(media.original_filename).downcase.index(s['MovieReleaseName'].downcase).nil? ||
+          #   !File.basename(media.original_filename).downcase.index(s['SubFileName'].gsub(/\..*?$/, '').downcase).nil?
+          # end
+
+          # # We found exact matches on the movie name, so ignore the rest
+          # media_subtitles = exact_match if exact_match.any?
+
           # Group the subtitles by language code
           media_subtitles = media_subtitles.group_by { |a| a['SubLanguageID'] }
 
-          # Since we can have more than one subtitle per language that matches our movie
-          # order the grouped subtitles by download count (descending), and keep only
-          # the first (we basically going with the majority of the people)
-          return Hash[*(media_subtitles.map {|a,b| [a, b.sort { |c, d| c['SubDownloadsCnt'].to_i <=> d['SubDownloadsCnt'].to_i }.reverse.first] }).flatten]
+          all_subtitles = Hash[*media_subtitles.flatten(1)]
+
+          return all_subtitles
         end
 
         def search_for_subtitles(media, options)
-          begin
-            response = @server.call("SearchSubtitles", get_token, options)
-            parse_response! response
+          response = make_call("SearchSubtitles", get_token, options)
+          parse_response! response
 
-            return response
-          rescue EOFError
-            logout
-          rescue XMLRPC::FaultException => e
-            puts "Error:"
-            puts e.faultCode
-            puts e.faultString
-            raise e
-          end
+          return response
         end
 
         def download_subtitle(media, subtitle)
-          begin
-            response = @server.call("DownloadSubtitles", get_token, [ subtitle['IDSubtitleFile'] ])
-            parse_response! response
+          response = make_call("DownloadSubtitles", get_token, [ subtitle['IDSubtitleFile'] ])
+          parse_response! response
 
-            if response[:success]
-              data = response['data']
+          if response[:success]
+            data = response['data']
 
-              if data
-                data.each do |subtitle_data|
-                  # Decode Base64 encoded gzipped data
-                  zip_data = Base64.decode64(subtitle_data['data'])
-                  # UnGZip it
-                  unzipped_data = Zlib::GzipReader.new(StringIO.new(zip_data)).read
-                  # Write it to a new file
-                  File.open(media.get_new_subtitle_filename(subtitle['SubLanguageID'], subtitle_data['idsubtitlefile']), 'wb') { |file| file.write(unzipped_data) }
-                end
+            if data
+              data.each do |subtitle_data|
+                # Decode Base64 encoded gzipped data
+                zip_data = Base64.decode64(subtitle_data['data'])
+                # UnGZip it
+                unzipped_data = Zlib::GzipReader.new(StringIO.new(zip_data)).read
+                # Write it to a new file
+                File.open(media.get_new_subtitle_filename(subtitle['SubLanguageID'], subtitle_data['idsubtitlefile']), 'wb') { |file| file.write(unzipped_data) }
               end
             end
-          rescue EOFError
-            download_subtitle subtitle
-          rescue XMLRPC::FaultException => e
-            puts "Error:"
-            puts e.faultCode
-            puts e.faultString
-            raise e
-          rescue Exception => e
-            puts "Error:"
-            # ap e
-            # ap e.message
-
-            raise e
           end
         end
 
         def download(url)
           Net::HTTP.get(URI.parse(url))
         end
+
+        def make_call(function, *parameters)
+          do_make_call function, 0, parameters
+        end
+
+        def do_make_call(function, retries, *parameters)
+          begin
+            response = @server.call(*[function, parameters].flatten)
+            response
+          rescue EOFError => e
+            if retries < 3
+              # retry
+              puts "Error (EOFError): retrying"
+              do_make_call function, retries + 1, *parameters
+            else
+              puts "Error (EOFError): retried 3 times, giving up"
+              raise e
+            end
+          rescue XMLRPC::FaultException => e
+            puts "Error (XMLRPC::FaultException):"
+            puts e.faultCode
+            puts e.faultString
+            raise e
+          rescue Exception => e
+            raise e
+          end
+        end
+
 
         def parse_response!(response)
           # Clear the token in case of some errors
