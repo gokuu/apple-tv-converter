@@ -27,7 +27,12 @@ module AppleTvConverter
             puts error.strip == '' || error =~ /guessed encoding/i ? " [DONE]" : " [ERROR] #{error}"
           else
             output, error, exit_status = Open3.popen3(command_line) { |stdin, stdout, stderr, wait_thr| [ stdout.read, stderr.read, wait_thr.value ] }
-            puts exit_status.exitstatus == 0 ? " [DONE]" : " [ERROR]"
+            if exit_status.exitstatus == 0
+              puts" [DONE]"
+            else
+              puts " [ERROR]"
+              puts command_line
+            end
           end
         end
       else

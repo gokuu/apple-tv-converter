@@ -6,22 +6,27 @@ module AppleTvConverter
       # Load the subtitles into memory and get IMDB id from them
       AppleTvConverter::SubtitlesFetcher::Opensubtitles.new(languages) do |fetcher|
         fetcher.search_subtitles media do |subtitles|
-          media.imdb_id ||= subtitles.first['IDMovieImdb']
+          media.imdb_id = subtitles.first['IDMovieImdb'] if media.imdb_id.nil? || media.imdb_id.to_s.strip == ''
         end
       end
     end
 
     def download_subtitles(media, languages)
-      puts "* Downloading subtitles"
       AppleTvConverter::SubtitlesFetcher::Opensubtitles.new(languages) do |fetcher|
-        fetcher.download_subtitles media do |step, subtitles|
-          case step
-            when :downloading   then printf "  * Downloading: \##{subtitles['IDSubtitleFile']} (#{get_language_name(subtitles['SubLanguageID'])}) - #{subtitles['SubFileName']}"
-            when :downloaded    then puts " [DONE]"
+        if fetcher.has_found_subtitles?(media)
+          printf "* Downloading subtitles"
+          fetcher.download_subtitles media do |step, subtitles|
+            case step
+              when :search        then puts %Q[ (#{subtitles.map { |l, subs| "#{subs.count} #{get_language_name(l)}" }.join(', ') })]
+              when :downloading   then printf "  * Downloading: \##{subtitles['IDSubtitleFile']} (#{get_language_name(subtitles['SubLanguageID'])}) - #{subtitles['SubFileName']}"
+              when :downloaded    then puts " [DONE]"
+            end
           end
+          puts "  * All subtitles downloaded"
+        else
+          puts "* No subtitles found to download"
         end
       end
-      puts "  * All subtitles downloaded"
     end
 
     def extract_subtitles(media, languages)
@@ -97,10 +102,17 @@ module AppleTvConverter
           options[:extra] << " -ab #{[audio_bitrate, (media.ffmpeg_data.audio_bitrate || 1000000)].min}k"
         end
 
+        # Ensure the languages are 'stored' as symbols, for comparison
+        languages = (languages || []).map(&:to_sym)
+
+        # If we're filtering by language, ensure that unknown and undetermined language
+        # streams are also mapped
+        languages += [nil, :und, :unk] if languages.any?
+
         # If the file has more than one audio track, map all tracks but subtitles when transcoding
         if media.audio_streams.length > 0
           media.streams.each do |stream|
-            options[:map] << " -map #{stream.input_number}:#{stream.stream_number}" if stream.type == :video || (stream.type == :audio && (languages.nil? || languages.empty? || ([nil, 'und', 'unk'] + languages).include?(stream.language)))
+            options[:map] << " -map #{stream.input_number}:#{stream.stream_number}" if stream.type == :video || (stream.type == :audio && (languages.empty? || languages.include?(stream.language ? stream.language.to_sym : stream.language)))
           end
         end
 
