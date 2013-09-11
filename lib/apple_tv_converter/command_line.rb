@@ -97,6 +97,13 @@ module AppleTvConverter
           end
 
           opts.separator ""
+          opts.separator "Other options:"
+
+          opts.on('-f', '--ffmpeg LOCATION', 'Set path to ffmpeg binary') do |f|
+            FFMPEG.ffmpeg_binary = f
+          end
+
+          opts.separator ""
           opts.separator "Common options:"
 
           # No argument, shows at tail.  This will print an options summary.
