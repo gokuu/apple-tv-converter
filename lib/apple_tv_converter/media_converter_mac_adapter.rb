@@ -41,8 +41,8 @@ module AppleTvConverter
       if media.imdb_movie
         unless media.is_tv_show_episode?
           metadata << %Q[{Name: #{media.imdb_movie.title.gsub(/"/, '\\"')}}]
-          metadata << %Q[{Genre: #{media.imdb_movie.genres.first.gsub(/"/, '\\"')}}]
         end
+        metadata << %Q[{Genre: #{media.imdb_movie.genres.first.gsub(/"/, '\\"')}}]
         metadata << %Q[{Description: #{media.imdb_movie.plot.gsub(/"/, '\\"')}}] if media.imdb_movie.plot
         metadata << %Q[{Release Date: #{media.imdb_movie.year}}] if media.imdb_movie.year > 0
         metadata << %Q[{Director: #{(media.imdb_movie.director.first || '').gsub(/"/, '\\"')}}]
@@ -60,17 +60,19 @@ module AppleTvConverter
       end
 
       metadata << %Q[{HD Video: true}] if media.hd?
+      metadata << %Q[{Media Kind: #{media.is_tv_show_episode? ? 'TV Show' : 'Movie'}}]
 
       # Overwrite the name and genre to group the episode correctly
       if media.is_tv_show_episode?
         metadata << %Q[{Name: #{media.show} S#{media.season.to_s.rjust(2, '0')}E#{media.number.to_s.rjust(2, '0')}}]
-        metadata << %Q[{Genre: #{media.genre}}]
+        # metadata << %Q[{Genre: #{media.genre}}]
         metadata << %Q[{TV Show: #{media.show}}]
         metadata << %Q[{TV Season: #{media.season}}]
         metadata << %Q[{TV Episode #: #{media.number}}]
       elsif !media.imdb_movie
         metadata << %Q[{Name: #{media.show}}]
         metadata << %Q[{Genre: #{media.genre}}]
+        metadata << %Q[{Media Kind: Movie}]
       end
 
       command_line = [
