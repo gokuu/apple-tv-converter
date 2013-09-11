@@ -149,6 +149,10 @@ module AppleTvConverter
             end
             e.original_filename = file
 
+            if Dir[File.join(File.dirname(e.original_filename), '*.imdb')].any?
+              e.imdb_id = File.basename(Dir[File.join(File.dirname(e.original_filename), '*.imdb')].first).gsub(/\.imdb$/i, '')
+            end
+
             return e
           rescue => exc
             puts "Couldn't parse filename, skipping: #{File.basename(file)}"
