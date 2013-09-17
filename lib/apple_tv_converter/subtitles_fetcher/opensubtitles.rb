@@ -46,12 +46,10 @@ module AppleTvConverter
           query_option[:episode] = media.number if media.is_tv_show_episode?
         end
 
-        options.each do |query_options|
-          response = search_for_subtitles(media, options)
-          if response[:success] && response['data']
-            Opensubtitles.subtitles[media] = response['data']
-            block.call response['data'] if block
-          end
+        response = search_for_subtitles(media, options)
+        if response[:success] && response['data']
+          Opensubtitles.subtitles[media] = response['data']
+          block.call response['data'] if block
         end
       end
 
@@ -195,8 +193,8 @@ module AppleTvConverter
 
         def do_make_call(function, retries, *parameters)
           begin
-            response = @server.call(*[function, parameters].flatten)
-            response
+            # Flatten the parameters to the correct depth
+            @server.call(*[function, parameters.flatten(1)].flatten(1))
           rescue EOFError => e
             if retries < 3
               # retry
