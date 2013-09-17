@@ -41,44 +41,69 @@ module AppleTvConverter
     end
 
     def tag(media)
-      metadata = ''
+      metadata = {}
 
-      if media.imdb_movie
-        unless media.is_tv_show_episode?
-          metadata << %Q[{Name: #{media.imdb_movie.title.gsub(/"/, '\\"')}}]
+      if media.is_tv_show_episode? && media.tvdb_movie
+        # ap [media.tvdb_movie[:show][:series], media.tvdb_movie[:episode]]
+        metadata['Name'] = media.tvdb_movie_data('EpisodeName')
+        metadata['Name'] ||= "#{media.show} S#{media.season.to_s.rjust(2, '0')}E#{media.number.to_s.rjust(2, '0')}"
+        metadata['Genre'] = media.tvdb_movie[:show][:series]['Genre'].gsub(/(?:^\|)|(?:\|$)/, '').split('|').first
+        metadata['Genre'] ||= media.imdb_movie.genres.first
+        metadata['Description'] = media.tvdb_movie_data('Overview')
+        metadata['Description'] ||= media.imdb_movie.plot if media.imdb_movie.plot
+        metadata['Release Date'] = media.tvdb_movie_data('FirstAired')
+        metadata['Release Date'] ||= media.imdb_movie.year if media.imdb_movie.year > 0
+        metadata['Director'] = media.tvdb_movie_data('Director')
+        metadata['Director'] ||= media.imdb_movie.director.first
+        metadata['TV Show'] = media.tvdb_movie[:show][:series]['SeriesName']
+        metadata['TV Show'] ||= media.show
+        metadata['TV Season'] = media.tvdb_movie_data('SeasonNumber')
+        metadata['TV Season'] ||= media.season
+        metadata['TV Episode #'] = media.tvdb_movie_data('EpisodeNumber')
+        metadata['TV Episode #'] ||= media.number
+        metadata['TV Network'] ||= media.tvdb_movie[:show][:series]['Network']
+        metadata['Screenwriters'] = media.tvdb_movie_data('Writer').gsub(/(?:^\|)|(?:\|$)/, '').split('|').join(', ')
+
+        if File.exists?(media.tvdb_movie_poster)
+          AppleTvConverter.copy media.tvdb_movie_poster, media.artwork_filename
+          metadata['Artwork'] = media.artwork_filename
         end
-        metadata << %Q[{Genre: #{media.imdb_movie.genres.first.gsub(/"/, '\\"')}}]
-        metadata << %Q[{Description: #{media.imdb_movie.plot.gsub(/"/, '\\"')}}] if media.imdb_movie.plot
-        metadata << %Q[{Release Date: #{media.imdb_movie.year}}] if media.imdb_movie.year > 0
-        metadata << %Q[{Director: #{(media.imdb_movie.director.first || '').gsub(/"/, '\\"')}}]
-        metadata << %Q[{Codirector: #{media.imdb_movie.director[1].gsub(/"/, '\\"')}}] if media.imdb_movie.director.length > 1
-
-        if media.imdb_movie.poster
-          open(media.imdb_movie.poster) do |f|
-            File.open(media.artwork_filename,"wb") do |file|
-              file.puts f.read
-            end
+      else
+        if media.imdb_movie
+          unless media.is_tv_show_episode?
+            metadata['Name'] = media.imdb_movie.title.gsub(/"/, '\\"')
           end
+          metadata['Genre'] = media.imdb_movie.genres.first.gsub(/"/, '\\"')
+          metadata['Description'] = media.imdb_movie.plot.gsub(/"/, '\\"') if media.imdb_movie.plot
+          metadata['Release Date'] = media.imdb_movie.year if media.imdb_movie.year
+          metadata['Director'] = (media.imdb_movie.director.first || '').gsub(/"/, '\\"') if media.imdb_movie.director.any?
+          metadata['Codirector'] = media.imdb_movie.director[1].gsub(/"/, '\\"') if media.imdb_movie.director.length > 1
 
-          metadata << %Q[{Artwork: #{media.artwork_filename}}]
+          if media.imdb_movie.poster
+            AppleTvConverter.copy media.imdb_movie.poster, media.artwork_filename
+            metadata['Artwork'] = media.artwork_filename
+          end
+        end
+
+        # Overwrite the name and genre to group the episode correctly
+        if media.is_tv_show_episode?
+          metadata['Name'] = "#{media.show} S#{media.season.to_s.rjust(2, '0')}E#{media.number.to_s.rjust(2, '0')}"
+          # metadata['Genre'] = media.genre
+          metadata['TV Show'] = media.show
+          metadata['TV Season'] = media.season
+          metadata['TV Episode #'] = media.number
+        elsif !media.imdb_movie
+          metadata['Name'] = media.show
+          metadata['Genre'] = media.genre
         end
       end
 
-      metadata << %Q[{HD Video: true}] if media.hd?
-      metadata << %Q[{Media Kind: #{media.is_tv_show_episode? ? 'TV Show' : 'Movie'}}]
+      metadata['HD Video'] = true if media.hd?
+      metadata['Media Kind'] = media.is_tv_show_episode? ? 'TV Show' : 'Movie'
 
-      # Overwrite the name and genre to group the episode correctly
-      if media.is_tv_show_episode?
-        metadata << %Q[{Name: #{media.show} S#{media.season.to_s.rjust(2, '0')}E#{media.number.to_s.rjust(2, '0')}}]
-        # metadata << %Q[{Genre: #{media.genre}}]
-        metadata << %Q[{TV Show: #{media.show}}]
-        metadata << %Q[{TV Season: #{media.season}}]
-        metadata << %Q[{TV Episode #: #{media.number}}]
-      elsif !media.imdb_movie
-        metadata << %Q[{Name: #{media.show}}]
-        metadata << %Q[{Genre: #{media.genre}}]
-        metadata << %Q[{Media Kind: Movie}]
-      end
+      metadata = metadata.map do |key, value|
+        value.nil? ? nil : %Q[{#{key}: #{value.to_s.gsub(/"/, '\\"')}}]
+      end.compact.join
 
       command_line = [
         Shellwords.escape(File.expand_path(File.join(File.dirname(__FILE__), '..', '..', 'bin', 'SublerCLI'))),

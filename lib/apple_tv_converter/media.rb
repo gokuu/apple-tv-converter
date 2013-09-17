@@ -2,6 +2,8 @@ module AppleTvConverter
   class Media
     attr_accessor :show, :season, :number
     attr_accessor :imdb_movie, :imdb_id
+    attr_accessor :tvdb_movie
+    attr_accessor :network, :tv_db_id, :tv_db_series_id, :first_air_date, :release_date, :episode_title
     attr_reader :original_filename
 
     def self.subtitle_extensions
@@ -153,6 +155,26 @@ module AppleTvConverter
 
     def movie_hash
       @movie_hash ||= AppleTvConverter::MovieHasher.compute_hash(original_filename)
+    end
+
+    def tvdb_movie_data(key, default = nil)
+      return tvdb_movie[:episode][key] if tvdb_movie && tvdb_movie.has_key?(:episode) && tvdb_movie[:episode].has_key?(key) && !tvdb_movie[:episode][key].blank? rescue default
+      return default
+    end
+
+    def tvdb_movie_poster
+      local_file = File.join(File.dirname(File.dirname(File.dirname(__FILE__))), 'cache', 'tvdb', "#{tvdb_movie[:show][:series]['id']}.jpg")
+
+      unless File.exists?(local_file)
+        artwork_filename = tvdb_movie[:show][:series]['poster'] || ''
+        artwork_filename = tvdb_movie_data('filename') || '' if artwork_filename.blank?
+        artwork_filename = "http://thetvdb.com/banners/#{artwork_filename}" if !artwork_filename.blank?
+        artwork_filename = imdb_movie.poster if artwork_filename.blank? && imdb_movie.poster
+
+        AppleTvConverter.copy artwork_filename, local_file unless artwork_filename.blank?
+      end
+
+      local_file
     end
 
     def get_new_subtitle_filename(language, subid = nil)

@@ -154,6 +154,28 @@ module AppleTvConverter
       raise NotImplementedYetException
     end
 
+    def get_metadata(media)
+      if media.is_tv_show_episode?
+        get_tv_show_db_info media
+      else
+        get_imdb_info media
+      end
+    end
+
+    def get_tv_show_db_info(media)
+      media.tvdb_movie = TvDbFetcher.search(media)
+      if media.tvdb_movie
+        media.imdb_id = media.tvdb_movie[:episode]['IMDB_ID'] if media.tvdb_movie[:episode] && media.tvdb_movie[:episode].has_key?('IMDB_ID')
+        media.imdb_id = media.tvdb_movie[:show][:series]['IMDB_ID'] if media.imdb_id.nil? || media.imdb_id.blank?
+        media.imdb_id = media.imdb_id.gsub(/\D+/, '')
+
+        # Update the episode name, if available
+        media.episode_title = media.tvdb_movie_data('EpisodeName')
+
+        get_imdb_info(media) unless media.imdb_id.blank?
+      end
+    end
+
     def get_imdb_info(media)
       printf "* Getting info from IMDB"
 
@@ -215,17 +237,6 @@ module AppleTvConverter
         options << " -acodec #{media.needs_audio_conversion? ? 'libfaac' : 'copy'}"
 
         options
-      end
-
-      def load_movie_from_imdb(media)
-        begin
-          search = Imdb::Search.new(media.show)
-
-          return search.movies.first if search.movies.count == 1
-        rescue
-        end
-
-        return nil
       end
   end
 end

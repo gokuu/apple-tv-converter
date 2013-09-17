@@ -25,6 +25,7 @@ require 'apple_tv_converter/media_converter'
 require 'apple_tv_converter/media'
 require 'apple_tv_converter/movie_hasher'
 require 'apple_tv_converter/subtitles_fetcher/opensubtitles'
+require 'apple_tv_converter/tv_db_fetcher'
 require 'apple_tv_converter/media_converter_adapter'
 require 'apple_tv_converter/media_converter_windows_adapter' if RUBY_PLATFORM =~ /(win|w)(32|64)$/
 require 'apple_tv_converter/media_converter_mac_adapter' if RUBY_PLATFORM =~ /(darwin)/
@@ -79,6 +80,14 @@ module AppleTvConverter
   # @return [String] the path to the atomic_parsley binary
   def self.atomic_parsley_binary
     @atomic_parsley_binary.nil? ? 'AtomicParsley' : @atomic_parsley_binary
+  end
+
+  def self.copy(from, to)
+    open(from) do |f|
+      File.open(to, "wb") do |file|
+        file.puts f.read
+      end
+    end
   end
 
   def get_language_name(language_code)
