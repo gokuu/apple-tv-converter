@@ -52,6 +52,17 @@ module AppleTvConverter
       @converted_filename = value
     end
 
+    def plex_format_filename
+      filename = if is_tv_show_episode?
+        %Q[#{show} - s#{season.to_s.rjust(2, '0')}e#{number.to_s.rjust(2, '0')}#{" - #{episode_title.gsub(/\\|\//, '-')}" if !episode_title.nil? && !episode_title.blank?}.mp4]
+      else
+        "#{show} (#{release_date || imdb_movie.year}).mp4"
+      end
+
+      File.join(File.dirname(converted_filename), filename)
+    end
+
+
     def backup_filename
       @backup_filename ||= "#{self.original_filename}.backup"
     end

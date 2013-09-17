@@ -85,6 +85,8 @@ module AppleTvConverter
         @adapter.add_to_itunes media if @options.add_to_itunes
         @adapter.clean_up(media) unless @options.skip_cleanup
       end
+
+      @adapter.rename_to_plex_format media if @options.plex_format
     end
   end
 end

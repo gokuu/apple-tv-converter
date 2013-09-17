@@ -38,6 +38,7 @@ module AppleTvConverter
         options.skip_cleanup = false
         options.add_to_itunes = false
         options.check_imdb = false
+        options.plex_format = false
         options.imdb_id = nil
         options.languages = []
         options.media = []
@@ -94,6 +95,11 @@ module AppleTvConverter
 
           opts.on('--os', "Download subtitles and infer IMDB ID from opensubtitles.org") do |i|
             options.download_subtitles = true
+          end
+
+          opts.on('--plex', 'Rename file(s) to Plex Media Server recommended format (implies --imdb)') do
+            options.plex_format = true
+            options.check_imdb = true
           end
 
           opts.separator ""

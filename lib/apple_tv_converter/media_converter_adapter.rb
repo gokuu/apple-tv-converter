@@ -222,6 +222,18 @@ module AppleTvConverter
       end
     end
 
+    def rename_to_plex_format(media)
+      printf "* Renaming to PLEX format"
+      begin
+        plex_format_filename = media.plex_format_filename
+        FileUtils.mv(media.converted_filename, plex_format_filename) unless media.converted_filename == plex_format_filename
+
+        puts " [DONE]"
+      rescue => e
+        puts " [ERROR]"
+      end
+    end
+
     protected
 
       def list_files(ls)
