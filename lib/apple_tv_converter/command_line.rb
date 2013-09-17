@@ -137,11 +137,15 @@ module AppleTvConverter
           # [1] - Show name
           begin
             e = AppleTvConverter::Media.new
-            # Extract name
-            match = File.dirname(file).match(/.*\/(.*?)(?:S(\d+))?$/i)
+
+            # Extract name (check if the folder name is Season XX, and use the parent folder name if it is)
+            test_path = File.basename(File.dirname(file)) =~ /^season\s*\d+/i ? File.dirname(File.dirname(file)) : File.dirname(file)
+
+            match = test_path.match(/.*\/(.*?)(?:S(\d+))?$/i)
+
             e.show = match[1].strip
 
-            # Extract season an media number
+            # Extract season and media number
             match = File.basename(file).match(/.*?(?:S(\d+)E(\d+)|(\d+)x(\d+)).*/i)
             if match
               e.season = (match[1] || match[3]).to_i
