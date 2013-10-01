@@ -209,7 +209,21 @@ module AppleTvConverter
             puts e.faultCode
             puts e.faultString
             raise e
+          rescue RuntimeError => e
+            if retries < 3
+              # retry
+              puts "Error (RuntimeError, most likely 503): retrying after 2 seconds"
+              sleep 2
+              do_make_call function, retries + 1, *parameters
+            else
+              puts "Error (RuntimeError, most likely 503): retried 3 times, giving up"
+
+              raise e
+            end
           rescue Exception => e
+            puts "Error (#{e.class})"
+            puts e.message
+
             raise e
           end
         end
