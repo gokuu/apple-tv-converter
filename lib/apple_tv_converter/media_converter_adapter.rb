@@ -237,7 +237,7 @@ module AppleTvConverter
       printf "* Renaming to PLEX format"
       begin
         plex_format_filename = media.plex_format_filename
-        FileUtils.mv(media.converted_filename, plex_format_filename) unless media.converted_filename == plex_format_filename
+        FileUtils.mv(media.converted_filename_equals_original_filename? ? media.original_filename : media.converted_filename, plex_format_filename) unless media.converted_filename == plex_format_filename
 
         puts " [DONE]"
       rescue => e

@@ -80,13 +80,11 @@ module AppleTvConverter
           @adapter.get_metadata(media)
         end
 
-        @adapter.tag(media) unless @options.skip_metadata
-
-        @adapter.add_to_itunes media if @options.add_to_itunes
-        @adapter.clean_up(media) unless @options.skip_cleanup
+        @adapter.tag media                   unless @options.skip_metadata
+        @adapter.clean_up media              unless @options.skip_cleanup
+        @adapter.rename_to_plex_format media if @options.plex_format
+        @adapter.add_to_itunes media         if @options.add_to_itunes
       end
-
-      @adapter.rename_to_plex_format media if @options.plex_format
     end
   end
 end

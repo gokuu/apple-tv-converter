@@ -145,7 +145,7 @@ module AppleTvConverter
         command_line = [
           'osascript <<EOF',
           'tell application "iTunes"',
-          %Q[add POSIX file "#{media.converted_filename.gsub(/"/, '\\"')}"],
+          %Q[add POSIX file "#{media.resulting_filename.gsub(/"/, '\\"')}"],
           'end tell',
           'EOF'
         ].join("\n")

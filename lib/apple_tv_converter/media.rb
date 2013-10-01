@@ -52,6 +52,7 @@ module AppleTvConverter
       File.join(File.dirname(converted_filename), filename)
     end
 
+    def resulting_filename ; File.exists?(plex_format_filename) ? plex_format_filename : converted_filename ; end
 
     def backup_filename ; @backup_filename ||= "#{self.original_filename}.backup" ; end
 
