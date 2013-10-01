@@ -27,6 +27,8 @@ module AppleTvConverter
         @converted_filename_equals_original_filename = true
       end
 
+      load_data_file
+
       @original_filename
     end
 
@@ -40,7 +42,16 @@ module AppleTvConverter
 
     def converted_filename=(value) ; @converted_filename = value ; end
 
+    def base_location
+      unless @base_location
+        @base_location = File.dirname(original_filename)
+        @base_location = File.dirname(@base_location) if File.basename(@base_location) =~ /^season \d+$/i
+      end
+      @base_location
     end
+
+    def data_file ; @data_file ||= File.join(base_location, '.apple-tv-converter.data') ; end
+    def has_data_file? ; File.exists?(data_file) ; end
 
     def plex_format_filename
       filename = if is_tv_show_episode?
@@ -142,5 +153,39 @@ module AppleTvConverter
       existing_subtitle_counter = subid.nil? ? Dir[File.join(dir_name, '*.srt')].length : subid
       return File.join(dir_name, File.basename(original_filename).gsub(File.extname(original_filename), ".#{existing_subtitle_counter}.#{language}.srt"))
     end
+
+    def update_data_file!
+      data = has_data_file? ? YAML.load_file(data_file) : {}
+
+      data[:tvdb_id] = self.tvdb_id if self.tvdb_id
+      data[:imdb_id] = self.imdb_id if self.imdb_id
+
+      if self.is_tv_show_episode?
+        episode_data = {}
+        episode_data[:tvdb_episode_id] = self.tvdb_episode_id if self.tvdb_episode_id
+        episode_data[:tvdb_season_id] = self.tvdb_season_id if self.tvdb_season_id
+        episode_data[:imdb_episode_id] = self.imdb_episode_id if self.imdb_episode_id
+
+        data[:episodes] ||= {}
+        data[:episodes][:"s#{self.season}e#{self.number}"] = episode_data
+      end
+
+      File.open(self.data_file, 'w') do |f|
+        f.write data.to_yaml
+      end
+    end
+
+    private
+
+      def load_data_file
+        begin
+          if has_data_file?
+            data = YAML.load_file(data_file)
+            self.tvdb_id = data[:tvdb_id] if data.has_key?(:tvdb_id)
+          end
+        rescue => e
+          ap ['e', e]
+        end
+      end
   end
 end
