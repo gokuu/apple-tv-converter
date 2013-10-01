@@ -165,14 +165,18 @@ module AppleTvConverter
     def get_tv_show_db_info(media)
       media.tvdb_movie = TvDbFetcher.search(media)
       if media.tvdb_movie
-        media.imdb_id = media.tvdb_movie[:episode]['IMDB_ID'] if media.tvdb_movie[:episode] && media.tvdb_movie[:episode].has_key?('IMDB_ID')
-        media.imdb_id = media.tvdb_movie[:show][:series]['IMDB_ID'] if media.imdb_id.nil? || media.imdb_id.blank?
-        media.imdb_id = media.imdb_id.gsub(/\D+/, '')
+        media.imdb_id = media.tvdb_movie[:show][:series]['IMDB_ID'] if media.tvdb_movie.has_key?(:show) && media.tvdb_movie[:show].has_key?(:series)
+        media.imdb_id = media.imdb_id.gsub(/\D+/, '') if media.imdb_id
 
         # Update the episode name, if available
         media.episode_title = media.tvdb_movie_data('EpisodeName')
+        media.tvdb_id = media.tvdb_movie_data('seriesid')
+        media.tvdb_season_id = media.tvdb_movie_data('seasonid')
+        media.tvdb_episode_id = media.tvdb_movie_data('id')
+        media.imdb_episode_id = media.tvdb_movie_data('IMDB_ID')
+        media.imdb_episode_id = media.imdb_episode_id.gsub(/\D+/, '') if media.imdb_episode_id
 
-        get_imdb_info(media) unless media.imdb_id.blank?
+        get_imdb_info(media) unless media.imdb_id.nil? || media.imdb_id.blank?
       end
     end
 
@@ -188,7 +192,14 @@ module AppleTvConverter
         return
       end
 
-      puts " [DONE]"
+      begin
+        media.imdb_movie.year
+        puts " [DONE]"
+      rescue OpenURI::HTTPError => e
+        media.imdb_id = nil
+        media.imdb_movie = nil
+        puts (e.message =~ /404/ ? " [NOT FOUND]" : " [ERROR]")
+      end
     end
 
     def tag(media)

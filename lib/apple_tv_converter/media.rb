@@ -1,9 +1,9 @@
 module AppleTvConverter
   class Media
-    attr_accessor :imdb_movie, :imdb_id
     attr_accessor :show, :season, :number, :last_number
+    attr_accessor :imdb_movie, :imdb_id, :imdb_episode_id
     attr_accessor :tvdb_movie
-    attr_accessor :network, :tv_db_id, :tv_db_series_id, :first_air_date, :release_date, :episode_title
+    attr_accessor :network, :tvdb_id, :tvdb_season_id, :tvdb_episode_id, :first_air_date, :release_date, :episode_title
     attr_reader :original_filename
 
     def self.subtitle_extensions
@@ -168,8 +168,8 @@ module AppleTvConverter
       @movie_hash ||= AppleTvConverter::MovieHasher.compute_hash(original_filename)
     end
 
-    def tvdb_movie_data(key, default = nil)
-      return tvdb_movie[:episode][key] if tvdb_movie && tvdb_movie.has_key?(:episode) && tvdb_movie[:episode].has_key?(key) && !tvdb_movie[:episode][key].blank? rescue default
+    def tvdb_movie_data(key, default = nil) ;
+      return tvdb_movie[:episode][key].gsub(/`/, '') if tvdb_movie && tvdb_movie.has_key?(:episode) && tvdb_movie[:episode].has_key?(key) && !tvdb_movie[:episode][key].blank? rescue default
       return default
     end
 
