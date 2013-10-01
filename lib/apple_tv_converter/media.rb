@@ -6,13 +6,9 @@ module AppleTvConverter
     attr_accessor :network, :tvdb_id, :tvdb_season_id, :tvdb_episode_id, :first_air_date, :release_date, :episode_title
     attr_reader :original_filename
 
-    def self.subtitle_extensions
-      ['srt', 'sub', 'ssa', 'ass']
-    end
+    def self.subtitle_extensions ; ['srt', 'sub', 'ssa', 'ass'] ; end
 
-    def self.ignored_extensions
-      ['nfo', 'jpg', 'png', 'bmp', 'sfv', 'imdb']
-    end
+    def self.ignored_extensions ; ['nfo', 'jpg', 'png', 'bmp', 'sfv', 'imdb'] ; end
 
     def original_filename=(value)
       @original_filename = value
@@ -30,26 +26,20 @@ module AppleTvConverter
         @converted_filename = original_filename.gsub(File.extname(original_filename), "_2#{File.extname(original_filename)}")
         @converted_filename_equals_original_filename = true
       end
+
+      @original_filename
     end
 
-    def converted_filename_equals_original_filename?
-      @converted_filename_equals_original_filename || false
-    end
+    def converted_filename_equals_original_filename? ; @converted_filename_equals_original_filename || false ; end
 
-    def artwork_filename
-      @artwork_filename ||= self.original_filename.gsub(File.extname(self.original_filename), '.jpg')
-    end
+    def artwork_filename ; @artwork_filename ||= self.original_filename.gsub(File.extname(self.original_filename), '.jpg') ; end
 
-    def subtitle_filename
-      @subtitle_filename ||= self.original_filename.gsub(File.extname(self.original_filename), '.srt')
-    end
+    def subtitle_filename ; @subtitle_filename ||= self.original_filename.gsub(File.extname(self.original_filename), '.srt') ; end
 
-    def converted_filename
-      @converted_filename ||= self.original_filename.gsub(File.extname(self.original_filename), '.mp4')
-    end
+    def converted_filename ; @converted_filename ||= self.original_filename.gsub(File.extname(self.original_filename), '.mp4') ; end
 
-    def converted_filename=(value)
-      @converted_filename = value
+    def converted_filename=(value) ; @converted_filename = value ; end
+
     end
 
     def plex_format_filename
@@ -63,17 +53,11 @@ module AppleTvConverter
     end
 
 
-    def backup_filename
-      @backup_filename ||= "#{self.original_filename}.backup"
-    end
+    def backup_filename ; @backup_filename ||= "#{self.original_filename}.backup" ; end
 
-    def converted_filename_with_subtitles
-      @converted_filename_with_subtitles ||= self.original_filename.gsub(/\.(mkv|avi|m4v)/, '_subtitled.mp4')
-    end
+    def converted_filename_with_subtitles ; @converted_filename_with_subtitles ||= self.original_filename.gsub(/\.(mkv|avi|m4v)/, '_subtitled.mp4') ;end
 
-    def ffmpeg_data
-      @ffmpeg_data ||= FFMPEG::Movie.new(original_filename)
-    end
+    def ffmpeg_data ; @ffmpeg_data ||= FFMPEG::Movie.new(original_filename) ; end
 
     def quality
       if !@quality
@@ -85,37 +69,21 @@ module AppleTvConverter
       @quality
     end
 
-    def genre
-      is_tv_show_episode? ? show : "#{quality} Movies"
-    end
+    def genre ; is_tv_show_episode? ? show : "#{quality} Movies" ; end
 
-    def quality=(value)
-      @quality = value
-    end
+    def quality=(value) ; @quality = value ; end
 
-    def name
-      %Q[#{show}#{" S#{season.to_s.rjust(2, '0')}E#{number.to_s.rjust(2, '0')}" if is_tv_show_episode?}]
-    end
+    def name ; %Q[#{show}#{" S#{season.to_s.rjust(2, '0')}E#{number.to_s.rjust(2, '0')}" if is_tv_show_episode?}] ; end
 
-    def is_tv_show_episode?
-      !season.nil? && !number.nil?
-    end
+    def is_tv_show_episode? ; !season.nil? && !number.nil? ; end
 
-    def is_movie?
-      !is_tv_show_episode?
-    end
+    def is_movie? ; !is_tv_show_episode? ; end
 
-    def is_mp4?
-      ffmpeg_data.container =~ /mp4/ rescue File.extname(original_filename) =~ /\.(m4v|mp4)$/
-    end
+    def is_mp4? ; ffmpeg_data.container =~ /mp4/ rescue File.extname(original_filename) =~ /\.(m4v|mp4)$/ ; end
 
-    def is_valid?
-      ffmpeg_data.valid?
-    end
+    def is_valid? ; ffmpeg_data.valid? ; end
 
-    def backup!
-      FileUtils.cp original_filename, backup_filename
-    end
+    def backup! ; FileUtils.cp original_filename, backup_filename ; end
 
     def has_embedded_subtitles?(languages = [])
       languages = languages.map { |l| l.downcase.to_sym }
@@ -128,45 +96,25 @@ module AppleTvConverter
       return @streams
     end
 
-    def video_streams
-      streams :video
-    end
+    def video_streams ; streams :video ; end
 
-    def audio_streams
-      streams :audio
-    end
+    def audio_streams ; streams :audio ; end
 
-    def subtitle_streams
-      streams :subtitle
-    end
+    def subtitle_streams ; streams :subtitle ; end
 
-    def needs_audio_conversion?
-      return ffmpeg_data.audio_codec !~ /(?:aac)/i
-    end
+    def needs_audio_conversion? ; return ffmpeg_data.audio_codec !~ /(?:aac)/i ; end
 
-    def needs_video_conversion?
-      return ffmpeg_data.video_codec !~ /(?:.*?h264|^mpeg4).*/i || ffmpeg_data.video_codec =~ /.*(?:xvid|divx).*/i
-    end
+    def needs_video_conversion? ; return ffmpeg_data.video_codec !~ /(?:.*?h264|^mpeg4).*/i || ffmpeg_data.video_codec =~ /.*(?:xvid|divx).*/i ; end
 
-    def needs_subtitles_conversion?
-      return ffmpeg_data.subtitle_streams.any?
-    end
+    def needs_subtitles_conversion? ; return ffmpeg_data.subtitle_streams.any? ; end
 
-    def needs_transcoding?
-      !(is_valid? && is_mp4? && !needs_video_conversion? && !needs_audio_conversion?)
-    end
+    def needs_transcoding? ; !(is_valid? && is_mp4? && !needs_video_conversion? && !needs_audio_conversion?) ; end
 
-    def hd?
-      ['1080p', '720p'].include?(quality)
-    end
+    def hd? ; ['1080p', '720p'].include?(quality) ; end
 
-    def movie_file_size
-      @movie_file_size ||= File.size(original_filename)
-    end
+    def movie_file_size ; @movie_file_size ||= File.size(original_filename) ; end
 
-    def movie_hash
-      @movie_hash ||= AppleTvConverter::MovieHasher.compute_hash(original_filename)
-    end
+    def movie_hash ; @movie_hash ||= AppleTvConverter::MovieHasher.compute_hash(original_filename) ; end
 
     def tvdb_movie_data(key, default = nil) ;
       return tvdb_movie[:episode][key].gsub(/`/, '') if tvdb_movie && tvdb_movie.has_key?(:episode) && tvdb_movie[:episode].has_key?(key) && !tvdb_movie[:episode][key].blank? rescue default
