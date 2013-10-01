@@ -1,7 +1,7 @@
 module AppleTvConverter
   class Media
-    attr_accessor :show, :season, :number
     attr_accessor :imdb_movie, :imdb_id
+    attr_accessor :show, :season, :number, :last_number
     attr_accessor :tvdb_movie
     attr_accessor :network, :tv_db_id, :tv_db_series_id, :first_air_date, :release_date, :episode_title
     attr_reader :original_filename
@@ -54,7 +54,7 @@ module AppleTvConverter
 
     def plex_format_filename
       filename = if is_tv_show_episode?
-        %Q[#{show} - s#{season.to_s.rjust(2, '0')}e#{number.to_s.rjust(2, '0')}#{" - #{episode_title.gsub(/\\|\//, '-')}" if !episode_title.nil? && !episode_title.blank?}.mp4]
+        %Q[#{show} - s#{season.to_s.rjust(2, '0')}e#{number.to_s.rjust(2, '0')}#{"-e#{last_number.to_s.rjust(2, '0')}" if last_number}#{" - #{episode_title.gsub(/\\|\//, '-').gsub(/\:/, '.').gsub(/&amp;/, '&').strip}" if !episode_title.nil? && !episode_title.blank?}.mp4]
       else
         "#{show} (#{release_date || imdb_movie.year}).mp4"
       end
