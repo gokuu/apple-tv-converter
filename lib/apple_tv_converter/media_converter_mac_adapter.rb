@@ -48,13 +48,9 @@ module AppleTvConverter
         metadata['Name'] = media.tvdb_movie_data('EpisodeName')
         metadata['Name'] ||= "#{media.show} S#{media.season.to_s.rjust(2, '0')}E#{media.number.to_s.rjust(2, '0')}"
         metadata['Genre'] = media.tvdb_movie[:show][:series]['Genre'].gsub(/(?:^\|)|(?:\|$)/, '').split('|').first rescue nil
-        metadata['Genre'] ||= media.imdb_movie.genres.first
         metadata['Description'] = media.tvdb_movie_data('Overview')
-        metadata['Description'] ||= media.imdb_movie.plot if media.imdb_movie && media.imdb_movie.plot
         metadata['Release Date'] = media.tvdb_movie_data('FirstAired')
-        metadata['Release Date'] ||= media.imdb_movie.year if media.imdb_movie && media.imdb_movie.year > 0
         metadata['Director'] = media.tvdb_movie_data('Director')
-        metadata['Director'] ||= media.imdb_movie.director.first if media.imdb_movie
         metadata['TV Show'] = media.tvdb_movie[:show][:series]['SeriesName']
         metadata['TV Show'] ||= media.show
         metadata['TV Season'] = media.tvdb_movie_data('SeasonNumber')
@@ -63,6 +59,14 @@ module AppleTvConverter
         metadata['TV Episode #'] ||= media.number
         metadata['TV Network'] ||= media.tvdb_movie[:show][:series]['Network']
         metadata['Screenwriters'] = media.tvdb_movie_data('Writer').gsub(/(?:^\|)|(?:\|$)/, '').split('|').join(', ') if media.tvdb_movie_data('Writer')
+
+        if media.imdb_movie
+          # Fallback to IMDB data if present
+          metadata['Genre'] ||= media.imdb_movie.genres.first if media.imdb_movie.genres && media.imdb_movie.genres.any?
+          metadata['Description'] ||= media.imdb_movie.plot if media.imdb_movie.plot
+          metadata['Release Date'] ||= media.imdb_movie.year if media.imdb_movie.year > 0
+          metadata['Director'] ||= media.imdb_movie.director.first
+        end
 
         if File.exists?(media.tvdb_movie_poster)
           AppleTvConverter.copy media.tvdb_movie_poster, media.artwork_filename
