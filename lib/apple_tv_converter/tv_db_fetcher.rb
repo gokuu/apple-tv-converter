@@ -17,15 +17,40 @@ module AppleTvConverter
         data = load_config_file('show_ids') || {}
 
         # http://thetvdb.com/api/GetSeries.php?seriesname=
-        if data.has_key?(media.show)
-        else
+        unless data.has_key?(media.show)
           show_ids = get_and_parse_data_from_server('show_ids', '/GetSeries.php', { :query => { :seriesname => media.show } }, ['Data', 'Series']) do |loaded_data|
-            data[media.show] = [loaded_data].flatten.map { |s| s['seriesid'] }
-            data
+            loaded_data = [loaded_data].flatten
+
+            data[media.show] = if loaded_data.length > 1
+              choice = 0
+
+              while true
+                puts "\n-- Several shows found, choose the intended one:"
+
+                loaded_data.each_with_index do |item, index|
+                  puts "#{(index + 1).to_s.rjust(loaded_data.length.to_s.length)} - #{item['SeriesName']} (id: #{item['seriesid']})"
+                  puts "#{' '.rjust(loaded_data.length.to_s.length)}   AKA: #{item['AliasNames']}" if item['AliasNames']
+                end
+
+                printf "\nWhat's your choice (1..#{loaded_data.length})? "
+                choice = STDIN.gets.chomp.to_i
+
+                break if choice.between?(1, loaded_data.length)
+
+                puts "Invalid choice!"
+              end
+
+              loaded_data[choice - 1]['seriesid']
+            else
+              loaded_data.first['seriesid']
+            end
+
+            # Return the new list sorted by show name
+            Hash[data.sort]
           end
         end
 
-        show_id = data[media.show].first
+        show_id = data[media.show]
       end
 
       if show_id.to_i > 0
