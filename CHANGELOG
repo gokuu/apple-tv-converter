@@ -1,3 +1,10 @@
+v0.5.0
+------
+* Added option for renaming a file to the format recommended by Plex
+* Now fetches metadata for TV show episodes from TheTVDB.com instead of IMDB
+* Correctly set Media Kind metadata tag for both TV show episodes and Movies
+* Some other fixes
+
 v0.4.4
 ------
 * Support Ruby v1.8.7
