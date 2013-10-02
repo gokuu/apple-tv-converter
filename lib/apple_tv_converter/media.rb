@@ -140,7 +140,7 @@ module AppleTvConverter
         artwork_filename = tvdb_movie[:show][:series]['poster'] || ''
         artwork_filename = tvdb_movie_data('filename') || '' if artwork_filename.blank?
         artwork_filename = "http://thetvdb.com/banners/#{artwork_filename}" if !artwork_filename.blank?
-        artwork_filename = imdb_movie.poster if artwork_filename.blank? && imdb_movie.poster
+        artwork_filename = imdb_movie.poster if artwork_filename.blank? && imdb_movie && imdb_movie.poster
 
         AppleTvConverter.copy artwork_filename, local_file unless artwork_filename.blank?
       end
