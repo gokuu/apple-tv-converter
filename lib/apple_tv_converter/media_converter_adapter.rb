@@ -163,6 +163,8 @@ module AppleTvConverter
     end
 
     def get_tv_show_db_info(media)
+      printf "* Getting info from TheTVDB"
+
       media.tvdb_movie = TvDbFetcher.search(media)
       if media.tvdb_movie
         media.imdb_id = media.tvdb_movie[:show][:series]['IMDB_ID'] if media.tvdb_movie.has_key?(:show) && media.tvdb_movie[:show].has_key?(:series)
@@ -177,6 +179,10 @@ module AppleTvConverter
         media.imdb_episode_id = media.imdb_episode_id.gsub(/\D+/, '') if media.imdb_episode_id
 
         get_imdb_info(media) unless media.imdb_id.nil? || media.imdb_id.blank?
+
+        puts " [DONE]"
+      else
+        puts " [NOT FOUND]"
       end
     end
 

@@ -23,21 +23,23 @@ module AppleTvConverter
 
             data[media.show] = if loaded_data.length > 1
               choice = 0
+              puts "\n  *"
 
               while true
-                puts "\n-- Several shows found, choose the intended one:"
+                puts %Q[  | Several shows found, choose the intended one:]
 
                 loaded_data.each_with_index do |item, index|
-                  puts "#{(index + 1).to_s.rjust(loaded_data.length.to_s.length)} - #{item['SeriesName']} (id: #{item['seriesid']})"
-                  puts "#{' '.rjust(loaded_data.length.to_s.length)}   AKA: #{item['AliasNames']}" if item['AliasNames']
+                  puts "  | #{(index + 1).to_s.rjust(loaded_data.length.to_s.length)} - #{item['SeriesName']} (id: #{item['seriesid']})"
+                  puts "  | #{' '.rjust(loaded_data.length.to_s.length)}   AKA: #{item['AliasNames']}" if item['AliasNames']
                 end
 
-                printf "\nWhat's your choice (1..#{loaded_data.length})? "
+                printf "  |\n  *- What's your choice (1..#{loaded_data.length})? "
                 choice = STDIN.gets.chomp.to_i
 
                 break if choice.between?(1, loaded_data.length)
 
-                puts "Invalid choice!"
+                puts "  | Invalid choice!"
+                puts "  |"
               end
 
               loaded_data[choice - 1]['seriesid']
