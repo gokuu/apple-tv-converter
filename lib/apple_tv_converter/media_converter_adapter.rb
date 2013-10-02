@@ -188,8 +188,37 @@ module AppleTvConverter
       elsif Dir[File.join(File.dirname(media.original_filename), '*.imdb')].any?
         media.imdb_movie = Imdb::Movie.new(File.basename(Dir[File.join(File.dirname(media.original_filename), '*.imdb')].first).gsub(/\.imdb$/i, ''))
       else
-        puts " [SKIPPING - COULDN'T FIND IMDB ID]"
-        return
+
+        search = Imdb::Search.new(media.show)
+
+        media.imdb_id = if search.movies.length > 1
+          choice = 0
+          puts "\n  *"
+          while true
+            puts %Q[  | Several movies found, choose the intended one#{" (showing only the first 20 of #{search.movies.length} results)"}:]
+
+            search.movies[0...20].each_with_index do |item, index|
+              puts "  | #{(index + 1).to_s.rjust(search.movies.length.to_s.length)} - #{item.title.strip} (id: #{item.id})"
+              puts "  | #{' '.rjust(search.movies.length.to_s.length)}   AKA: #{item.also_known_as.join(', ').strip}" if item.also_known_as.any?
+            end
+
+            printf "  |\n  *- What's your choice (1..#{[search.movies.length, 20].min})? "
+            choice = STDIN.gets.chomp.to_i
+
+            break if choice.between?(1, [search.movies.length, 20].min)
+
+            puts "  | Invalid choice!"
+            puts "  |"
+          end
+
+          search.movies[choice - 1].id
+        else
+          search.movies.first.id
+        end
+
+        media.imdb_movie = Imdb::Movie.new(media.imdb_id)
+
+        printf "  * Getting info from IMDB"
       end
 
       begin
@@ -225,7 +254,6 @@ module AppleTvConverter
         FileUtils.rm(media.artwork_filename) if File.exists?(media.artwork_filename)
         FileUtils.rm_r list_files(media.original_filename.gsub(File.extname(media.original_filename), '*.srt'))
         FileUtils.rm(media.backup_filename) if File.exists?(media.backup_filename)
-
 
         puts " [DONE]"
       rescue

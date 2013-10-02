@@ -20,11 +20,6 @@ module AppleTvConverter
       # Load IMDB id from options
       media.imdb_id = @options.imdb_id
 
-      # Start searching subtitles if we either need to download them, or we need the IMDB id
-      if (@options.skip_subtitles != true && @options.download_subtitles && media.subtitle_streams.empty? && @adapter.list_files(media.original_filename.gsub(/.{4}$/, '.*srt')).empty?) ||
-          !(@options.skip_metadata || !@options.check_imdb && !(media.imdb_id || media.tvdb_id))
-        @adapter.search_subtitles(media, @options.languages)
-      end
 
       if media.is_tv_show_episode?
         puts "* TV Show Episode information:"
@@ -36,7 +31,11 @@ module AppleTvConverter
         puts "* Name: #{media.show}"
         puts "* Genre: #{media.genre}"
       end
-      puts "* IMDB ID: #{media.imdb_id}" if media.imdb_id
+      if media.imdb_id
+        puts "* IMDB ID: #{media.imdb_id}"
+      elsif @options.check_imdb && !@options.skip_metadata
+        puts "* IMDB ID: Unknown yet"
+      end
 
       puts "* #{media.audio_streams.length} audio track(s)"
       if media.audio_streams.any?
