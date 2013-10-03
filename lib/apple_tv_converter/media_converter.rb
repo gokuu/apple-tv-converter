@@ -18,7 +18,7 @@ module AppleTvConverter
 
     def process_media(media)
       # Load IMDB id from options
-      media.imdb_id = @options.imdb_id
+      media.imdb_id ||= @options.imdb_id
 
 
       if media.is_tv_show_episode?

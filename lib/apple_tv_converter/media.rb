@@ -182,6 +182,7 @@ module AppleTvConverter
           if has_data_file?
             data = YAML.load_file(data_file)
             self.tvdb_id = data[:tvdb_id] if data.has_key?(:tvdb_id)
+            self.imdb_id = data[:imdb_id] if data.has_key?(:imdb_id)
           end
         rescue => e
           ap ['e', e]
