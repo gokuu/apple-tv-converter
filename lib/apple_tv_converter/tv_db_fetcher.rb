@@ -11,6 +11,8 @@ module AppleTvConverter
     base_uri 'thetvdb.com/api'
 
     def self.search(media, language = 'en')
+      get_updates_from_server
+
       if media.tvdb_id
         show_id = media.tvdb_id
       else
@@ -123,6 +125,12 @@ module AppleTvConverter
         File.open(full_filename, 'w') { |f| f.write data.to_yaml }
       end
 
+      def self.delete_config_file(filename)
+        full_filename = File.join(local_cache_base_path, filename =~ /\.yml$/ ? filename : "#{filename}.yml")
+        File.delete(full_filename) if File.exists?(full_filename)
+      end
+
+
       def self.get_data_from_server(url, options = {})
         AppleTvConverter.logger.debug "  -> Getting from server: #{url}"
         cache = options.delete(:cache) || true
@@ -181,6 +189,7 @@ module AppleTvConverter
       end
 
       def self.get_and_parse_data_from_server(filename, url, url_options, response_indexes = [])
+        cache = url_options.delete(:cache) || true
         data = get_data_from_server(url, url_options)
 
         if data
@@ -189,9 +198,25 @@ module AppleTvConverter
 
             data = yield(data) if block_given?
 
-            save_config_file filename, data
+            save_config_file filename, data if cache
           rescue
             data = nil
+          end
+        end
+      end
+
+      def self.get_updates_from_server(options = {})
+        get_and_parse_data_from_server('updates', '/Updates.php', { :query => { :type => 'all', :time => load_config_file('update')}, :cache => false }, ['Items']) do |data|
+          if data
+            # Delete each show's cached data
+            data['Series'].each do |show_id|
+              delete_config_file show_id
+              delete_config_file "#{show_id}.jpg"
+            end
+
+            # Save the new timestamp
+            save_config_file 'update', data['Time']
+            @server_update_timestamp = data['Time']
           end
         end
       end
@@ -229,5 +254,8 @@ module AppleTvConverter
       end
 
       FileUtils.mkdir_p local_cache_base_path
+
+      # Load the server timestamp on startup
+      server_update_timestamp
   end
 end
