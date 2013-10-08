@@ -178,7 +178,8 @@ module AppleTvConverter
         media.imdb_episode_id = media.tvdb_movie_data('IMDB_ID')
         media.imdb_episode_id = media.imdb_episode_id.gsub(/\D+/, '') if media.imdb_episode_id
 
-        get_imdb_info(media) unless media.imdb_id.nil? || media.imdb_id.blank?
+        puts "" # Line break just for
+        get_imdb_info(media, false) unless media.imdb_id.nil? || media.imdb_id.blank?
 
         puts " [DONE]"
       else
@@ -186,8 +187,8 @@ module AppleTvConverter
       end
     end
 
-    def get_imdb_info(media)
-      printf "* Getting info from IMDB"
+    def get_imdb_info(media, feedback = true)
+      printf "* Getting info from IMDB" unless feedback
 
       if media.imdb_id
         media.imdb_movie = Imdb::Movie.new(media.imdb_id)
@@ -229,11 +230,11 @@ module AppleTvConverter
 
       begin
         media.imdb_movie.year
-        puts " [DONE]"
+        puts " [DONE]" unless feedback
       rescue OpenURI::HTTPError => e
         media.imdb_id = nil
         media.imdb_movie = nil
-        puts (e.message =~ /404/ ? " [NOT FOUND]" : " [ERROR]")
+        puts (e.message =~ /404/ ? " [NOT FOUND]" : " [ERROR]") unless feedback
       end
     end
 
