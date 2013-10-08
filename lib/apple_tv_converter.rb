@@ -6,8 +6,6 @@ require 'logger'
 require 'stringio'
 require 'shellwords'
 require 'open3'
-# require 'streamio-ffmpeg'
-# require 'awesome_print'
 require 'fileutils'
 require 'language_list'
 require 'open-uri'
@@ -18,19 +16,17 @@ require 'uri'
 require 'base64'
 require 'zlib'
 
-require 'apple_tv_converter/version'
-require 'apple_tv_converter/io_patch'
-require 'apple_tv_converter/command_line'
-require 'apple_tv_converter/media_converter'
-require 'apple_tv_converter/media'
-require 'apple_tv_converter/movie_hasher'
-require 'apple_tv_converter/subtitles_fetcher/opensubtitles'
-require 'apple_tv_converter/tv_db_fetcher'
-require 'apple_tv_converter/media_converter_adapter'
-require 'apple_tv_converter/media_converter_windows_adapter' if RUBY_PLATFORM =~ /(win|w)(32|64)$/
-require 'apple_tv_converter/media_converter_mac_adapter' if RUBY_PLATFORM =~ /(darwin)/
-
 module AppleTvConverter
+
+  # Determine whether running on Windows
+  #
+  # @return [boolean] true if running on Windows
+  def self.is_windows? ; RUBY_PLATFORM =~/.*?mingw.*?/i ; end
+  # Determine whether running on Mac OS X
+  #
+  # @return [boolean] true if running on Mac OS X
+  def self.is_macosx? ; RUBY_PLATFORM =~/.*?darwin.*?/i ; end
+
   # AppleTvConverter logs information about its progress when it's transcoding.
   # Jack in your own logger through this method if you wish to.
   #
@@ -90,7 +86,12 @@ module AppleTvConverter
     end
   end
 
-  def get_language_name(language_code)
+  def self.data_path()
+    @data_path ||= File.expand_path(File.join('~', 'Library', 'Application Support', 'apple-tv-converter')) if is_macosx?
+    @data_path
+  end
+
+  def self.get_language_name(language_code)
     return language_code if language_code.length > 3
 
     # ??? - English
@@ -151,3 +152,15 @@ module AppleTvConverter
     return nil
   end
 end
+
+require 'apple_tv_converter/version'
+require 'apple_tv_converter/io_patch'
+require 'apple_tv_converter/command_line'
+require 'apple_tv_converter/media_converter'
+require 'apple_tv_converter/media'
+require 'apple_tv_converter/movie_hasher'
+require 'apple_tv_converter/subtitles_fetcher/opensubtitles'
+require 'apple_tv_converter/tv_db_fetcher'
+require 'apple_tv_converter/media_converter_adapter'
+require 'apple_tv_converter/media_converter_windows_adapter' if RUBY_PLATFORM =~ /(win|w)(32|64)$/
+require 'apple_tv_converter/media_converter_mac_adapter' if RUBY_PLATFORM =~ /(darwin)/

@@ -134,13 +134,10 @@ module AppleTvConverter
     end
 
     def tvdb_movie_poster
-      local_file = File.join(File.dirname(File.dirname(File.dirname(__FILE__))), 'cache', 'tvdb', "#{tvdb_movie[:show][:series]['id']}.jpg")
+      local_file = AppleTvConverter::TvDbFetcher.get_poster(self)
 
       unless File.exists?(local_file)
-        artwork_filename = tvdb_movie[:show][:series]['poster'] || ''
-        artwork_filename = tvdb_movie_data('filename') || '' if artwork_filename.blank?
-        artwork_filename = "http://thetvdb.com/banners/#{artwork_filename}" if !artwork_filename.blank?
-        artwork_filename = imdb_movie.poster if artwork_filename.blank? && imdb_movie && imdb_movie.poster
+        artwork_filename = imdb_movie.poster if imdb_movie && imdb_movie.poster
 
         AppleTvConverter.copy artwork_filename, local_file unless artwork_filename.blank?
       end

@@ -8,7 +8,7 @@ module AppleTvConverter
           subtitle_filename =~ /\.(\w{3})\.srt$/i
           language_code = $1 || 'und'
 
-          language_name = get_language_name(language_code)
+          language_name = AppleTvConverter.get_language_name(language_code)
 
           command_line = [
             Shellwords.escape(File.expand_path(File.join(File.dirname(__FILE__), '..', '..', 'bin', 'SublerCLI'))),

@@ -17,8 +17,8 @@ module AppleTvConverter
           printf "* Downloading subtitles"
           fetcher.download_subtitles media do |step, subtitles|
             case step
-              when :search        then puts %Q[ (#{subtitles.map { |l, subs| "#{subs.count} #{get_language_name(l)}" }.join(', ') })]
-              when :downloading   then printf "  * Downloading: \##{subtitles['IDSubtitleFile']} (#{get_language_name(subtitles['SubLanguageID'])}) - #{subtitles['SubFileName']}"
+              when :search        then puts %Q[ (#{subtitles.map { |l, subs| "#{subs.count} #{AppleTvConverter.get_language_name(l)}" }.join(', ') })]
+              when :downloading   then printf "  * Downloading: \##{subtitles['IDSubtitleFile']} (#{AppleTvConverter.get_language_name(subtitles['SubLanguageID'])}) - #{subtitles['SubFileName']}"
               when :downloaded    then puts " [DONE]"
             end
           end

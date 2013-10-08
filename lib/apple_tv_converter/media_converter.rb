@@ -1,15 +1,10 @@
 module AppleTvConverter
   class MediaConverter
-    include AppleTvConverter
-
     @@timeout = 200
-
-    def is_windows? ; RUBY_PLATFORM =~/.*?mingw.*?/i ; end
-    def is_macosx? ; RUBY_PLATFORM =~/.*?darwin.*?/i ; end
 
     def initialize(options)
       @options = options
-      @adapter = is_windows? ? AppleTvConverter::MediaConverterWindowsAdapter.new : AppleTvConverter::MediaConverterMacAdapter.new
+      @adapter = AppleTvConverter.is_windows? ? AppleTvConverter::MediaConverterWindowsAdapter.new : AppleTvConverter::MediaConverterMacAdapter.new
 
       AppleTvConverter.logger.level = Logger::ERROR
       FFMPEG.logger.level = Logger::ERROR
@@ -41,7 +36,7 @@ module AppleTvConverter
       if media.audio_streams.any?
         media.audio_streams.each do |audio|
           language_code = audio.language || 'und'
-          language_name = get_language_name(language_code)
+          language_name = AppleTvConverter.get_language_name(language_code)
           puts "  * #{language_code} - #{language_name.nil? ? 'Unknown (ignoring)' : language_name}"
         end
       end
@@ -50,7 +45,7 @@ module AppleTvConverter
       if media.subtitle_streams.any?
         media.subtitle_streams.each do |subtitle|
           language_code = subtitle.language || 'und'
-          language_name = get_language_name(language_code)
+          language_name = AppleTvConverter.get_language_name(language_code)
           puts "  * #{language_code} - #{language_name.nil? ? 'Unknown (ignoring)' : language_name}"
         end
       end
@@ -60,7 +55,7 @@ module AppleTvConverter
         @adapter.list_files(media.original_filename.gsub(/.{4}$/, '.*srt')).each do |subtitle|
           subtitle =~ /\.(.{3})\.srt/i
           language_code = $1 || 'und'
-          language_name = get_language_name(language_code)
+          language_name = AppleTvConverter.get_language_name(language_code)
           puts "  * #{language_code.blank? ? 'eng' : language_code} - #{language_name.nil? ? 'Unknown (ignoring)' : language_name}"
         end
       end

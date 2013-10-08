@@ -80,11 +80,25 @@ module AppleTvConverter
       return false
     end
 
+    def self.get_poster(media)
+      local_file = File.join(AppleTvConverter.data_path, 'cache', 'tvdb', "#{media.tvdb_id}.jpg")
+
+      unless File.exists?(local_file)
+        artwork_filename = media.tvdb_movie[:show][:series]['poster'] || ''
+        artwork_filename = media.tvdb_movie_data('filename') || '' if artwork_filename.blank?
+        artwork_filename = "http://thetvdb.com/banners/#{artwork_filename}" if !artwork_filename.blank?
+
+        AppleTvConverter.copy artwork_filename, local_file unless artwork_filename.blank?
+      end
+
+      local_file
+    end
+
     private
 
       def self.api_key ; return '67FBF9F0670DBDF2' ; end
       def self.local_cache_base_path
-        return File.expand_path(File.join(File.dirname(__FILE__), '..', '..', 'cache', 'tvdb'))
+        return File.expand_path(File.join(AppleTvConverter.data_path, 'cache', 'tvdb'))
       end
       def self.server_update_timestamp
         @server_update_timestamp ||= load_config_file('update')
