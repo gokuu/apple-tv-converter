@@ -37,7 +37,7 @@ module AppleTvConverter
         options.skip_metadata = false
         options.skip_cleanup = false
         options.add_to_itunes = false
-        options.check_imdb = false
+        options.skip_online_metadata = false
         options.plex_format = false
         options.imdb_id = nil
         options.languages = []
@@ -47,27 +47,15 @@ module AppleTvConverter
           opts.banner = "Usage: apple-tv-converter [options] [file]\n" +
                         "       [file] must be provided unless the -d (--dir) switch is present.\n"
 
-          opts.on('--no-transcoding', "Don't transcode video or audio") do |v|
-            options.skip_transcoding = true
-          end
-
-          opts.on('--no-subtitles', "Don't add subtitles") do |v|
-            options.skip_subtitles = true
-          end
-
-          opts.on('--no-metadata', "Don't add metadata") do |m|
-            options.skip_metadata = true
-          end
-
-          opts.on('--no-cleanup', "Don't cleanup the source files after processing") do |c|
-            options.skip_cleanup = true
+          opts.on('-i', '--id id', "Set a specific id for fetching metadata from online services") do |id|
+            options.imdb_id = id
           end
 
           opts.on('-l', '--languages eng,por,...', Array, "Only keep audio and subtitles in the specified languages") do |languages|
             options.languages.push *languages
           end
 
-          opts.on('-d', '--dir [DIRECTORY]', 'Process all files in DIRECTORY recursively') do |dir|
+          opts.on('-d', '--dir DIRECTORY', 'Process all files in DIRECTORY recursively') do |dir|
             raise ArgumentError.new("Path not found: #{dir}") unless File.exists?(dir)
             raise ArgumentError.new("Path is not a directory: #{dir}") unless File.directory?(dir)
 
@@ -85,21 +73,35 @@ module AppleTvConverter
             options.add_to_itunes = true
           end
 
-          opts.on('--imdb [ID]',
-              "Gather data from IMDB (optionally specifying movie id. If an id isn't specified",
-              "the program looks for a file on the same directory, named <id>.imdb)"
-            ) do |id|
-            options.check_imdb = true
-            options.imdb_id = id if id
-          end
-
           opts.on('--os', "Download subtitles and infer IMDB ID from opensubtitles.org") do |i|
             options.download_subtitles = true
           end
 
-          opts.on('--plex', 'Rename file(s) to Plex Media Server recommended format (implies --imdb)') do
+          opts.on('--plex', 'Rename file(s) to Plex Media Server recommended format') do
             options.plex_format = true
-            options.check_imdb = true
+            options.skip_online_metadata = false
+          end
+
+          opts.separator ""
+
+          opts.on('--no-transcoding', "Don't transcode video or audio") do |v|
+            options.skip_transcoding = true
+          end
+
+          opts.on('--no-subtitles', "Don't add subtitles") do |v|
+            options.skip_subtitles = true
+          end
+
+          opts.on('--no-metadata', "Don't add metadata (implies --no-online-metadata)") do |m|
+            options.skip_metadata = true
+          end
+
+          opts.on('--no-online-metadata', "Don't fetch metadata from online services (IMDB or TheTVDB)") do |m|
+            options.skip_online_metadata = true
+          end
+
+          opts.on('--no-cleanup', "Don't cleanup the source files after processing") do |c|
+            options.skip_cleanup = true
           end
 
           opts.separator ""
@@ -107,6 +109,14 @@ module AppleTvConverter
 
           opts.on('-f', '--ffmpeg LOCATION', 'Set path to ffmpeg binary') do |f|
             FFMPEG.ffmpeg_binary = f
+          end
+
+          opts.separator ""
+          opts.separator "DEPRECATED options:"
+
+          opts.on('--imdb', "Gather data from IMDB (optionally specifying movie id)") do
+            puts "Warning: Switch --imdb is DEPRECATED, and will be removed in a future version. It is now activated by default"
+            puts "         If you want to specify an id, please use the switch --id."
           end
 
           opts.separator ""
@@ -171,10 +181,6 @@ module AppleTvConverter
             end
 
             e.original_filename = file
-
-            if Dir[File.join(File.dirname(e.original_filename), '*.imdb')].any?
-              e.imdb_id = File.basename(Dir[File.join(File.dirname(e.original_filename), '*.imdb')].first).gsub(/\.imdb$/i, '')
-            end
 
             return e
           rescue => exc

@@ -26,10 +26,12 @@ module AppleTvConverter
         puts "* Name: #{media.show}"
         puts "* Genre: #{media.genre}"
       end
-      if media.imdb_id
-        puts "* IMDB ID: #{media.imdb_id}"
-      elsif @options.check_imdb && !@options.skip_metadata
-        puts "* IMDB ID: Unknown yet"
+      if !@options.skip_online_metadata
+        if media.imdb_id
+          puts "* IMDB ID: #{media.imdb_id}"
+        elsif !@options.skip_metadata
+          puts "* IMDB ID: Unknown yet"
+        end
       end
 
       puts "* #{media.audio_streams.length} audio track(s)"
@@ -61,6 +63,7 @@ module AppleTvConverter
       end
 
       if @options.skip_subtitles != true && @options.download_subtitles && media.subtitle_streams.empty? && @adapter.list_files(media.original_filename.gsub(/.{4}$/, '.*srt')).empty?
+        @adapter.search_subtitles(media, @options.languages)
         @adapter.download_subtitles(media, @options.languages)
       end
 
@@ -69,7 +72,7 @@ module AppleTvConverter
       if @options.skip_transcoding || @adapter.transcode(media, @options.languages)
         @adapter.add_subtitles(media) unless @options.skip_subtitles
 
-        unless @options.skip_metadata || !@options.check_imdb
+        unless @options.skip_metadata || @options.skip_online_metadata
           media.imdb_id ||= @options.imdb_id
           @adapter.get_metadata(media)
         end
