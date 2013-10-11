@@ -4,7 +4,7 @@ module AppleTvConverter
 
     def initialize(options)
       @options = options
-      @adapter = AppleTvConverter.is_windows? ? AppleTvConverter::MediaConverterWindowsAdapter.new : AppleTvConverter::MediaConverterMacAdapter.new
+      @adapter = (AppleTvConverter.is_windows? ? AppleTvConverter::MediaConverterWindowsAdapter : AppleTvConverter::MediaConverterMacAdapter).new(options)
 
       AppleTvConverter.logger.level = Logger::ERROR
       FFMPEG.logger.level = Logger::ERROR

@@ -2,6 +2,12 @@ module AppleTvConverter
   class MediaConverterAdapter
     include AppleTvConverter
 
+    attr_accessor :conversion_options
+
+    def initialize(options)
+      self.conversion_options = options
+    end
+
     def search_subtitles(media, languages)
       # Load the subtitles into memory and get IMDB id from them
       AppleTvConverter::SubtitlesFetcher::Opensubtitles.new(languages) do |fetcher|
@@ -178,8 +184,10 @@ module AppleTvConverter
         media.imdb_episode_id = media.tvdb_movie_data('IMDB_ID')
         media.imdb_episode_id = media.imdb_episode_id.gsub(/\D+/, '') if media.imdb_episode_id
 
-        puts "" # Line break just for
-        get_imdb_info(media, false) unless media.imdb_id.nil? || media.imdb_id.blank?
+        unless media.imdb_id.nil? || media.imdb_id.blank?
+          puts "" # Line break just for output layout
+          get_imdb_info(media, false)
+        end
 
         puts " [DONE]"
       else
@@ -188,7 +196,7 @@ module AppleTvConverter
     end
 
     def get_imdb_info(media, feedback = true)
-      printf "* Getting info from IMDB" unless feedback
+      printf "* Getting info from IMDB" if feedback
 
       if media.imdb_id
         media.imdb_movie = Imdb::Movie.new(media.imdb_id)
@@ -202,7 +210,7 @@ module AppleTvConverter
           choice = 0
           puts "\n  *"
           while true
-            puts %Q[  | Several movies found, choose the intended one#{" (showing only the first 20 of #{search.movies.length} results)"}:]
+            puts %Q[  | Several movies found, choose the intended one#{" (showing only the first 20 of #{search.movies.length} results)" if search.movies.length > 20}:]
 
             search.movies[0...20].each_with_index do |item, index|
               puts "  | #{(index + 1).to_s.rjust(search.movies.length.to_s.length)} - #{item.title.strip} (id: #{item.id})"
@@ -218,6 +226,7 @@ module AppleTvConverter
             puts "  |"
           end
 
+          printf "  * Getting info from IMDB"
           search.movies[choice - 1].id
         else
           search.movies.first.id
@@ -225,16 +234,21 @@ module AppleTvConverter
 
         media.imdb_movie = Imdb::Movie.new(media.imdb_id)
 
-        printf "  * Getting info from IMDB"
       end
 
       begin
         media.imdb_movie.year
-        puts " [DONE]" unless feedback
+        puts " [DONE]" if feedback
       rescue OpenURI::HTTPError => e
         media.imdb_id = nil
         media.imdb_movie = nil
-        puts (e.message =~ /404/ ? " [NOT FOUND]" : " [ERROR]") unless feedback
+        puts (e.message =~ /404/ ? " [NOT FOUND]" : " [ERROR]") if feedback
+      rescue
+        if media.imdb_id.nil?
+          puts " [NOT FOUND]" if feedback
+        else
+          raise e
+        end
       end
     end
 
