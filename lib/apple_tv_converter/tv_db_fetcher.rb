@@ -10,7 +10,7 @@ module AppleTvConverter
 
     base_uri 'thetvdb.com/api'
 
-    def self.search(media, language = 'en')
+    def self.search(media, interactive = true, language = 'en')
       get_updates_from_server
 
       if media.tvdb_id
@@ -23,7 +23,7 @@ module AppleTvConverter
           show_ids = get_and_parse_data_from_server('show_ids', '/GetSeries.php', { :query => { :seriesname => media.show } }, ['Data', 'Series']) do |loaded_data|
             loaded_data = [loaded_data].flatten
 
-            data[media.show] = if loaded_data.length > 1
+            data[media.show] = if loaded_data.length > 1 && interactive
               choice = 0
               puts "\n  *"
 

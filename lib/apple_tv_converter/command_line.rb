@@ -39,6 +39,7 @@ module AppleTvConverter
         options.add_to_itunes = false
         options.skip_online_metadata = false
         options.plex_format = false
+        options.interactive = true
         options.imdb_id = nil
         options.languages = []
         options.media = []
@@ -100,6 +101,10 @@ module AppleTvConverter
 
           opts.on('--no-online-metadata', "Don't fetch metadata from online services (IMDB or TheTVDB)") do |m|
             options.skip_online_metadata = true
+          end
+
+          opts.on('--no-interactive', "Perform all operations without user intervention, using sensible defaults") do |m|
+            options.interactive = false
           end
 
           opts.on('--no-cleanup', "Don't cleanup the source files after processing") do |c|
