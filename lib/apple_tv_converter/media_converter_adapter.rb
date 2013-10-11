@@ -206,6 +206,10 @@ module AppleTvConverter
 
         search = Imdb::Search.new(media.show)
 
+        search.movies.delete_if do |item|
+          item.title.strip =~ /(?:(?:\(TV\s*(?:Movie|(?:Mini.?)?Series|Episode))|(?:Video(?:\s*Game)?))/i
+        end
+
         media.imdb_id = if search.movies.length > 1
           choice = 0
           puts "\n  *"
@@ -229,11 +233,10 @@ module AppleTvConverter
           printf "  * Getting info from IMDB"
           search.movies[choice - 1].id
         else
-          search.movies.first.id
+          search.movies.first.id rescue nil
         end
 
-        media.imdb_movie = Imdb::Movie.new(media.imdb_id)
-
+        media.imdb_movie = Imdb::Movie.new(media.imdb_id) if media.imdb_id
       end
 
       begin
