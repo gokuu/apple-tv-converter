@@ -18,6 +18,9 @@ Gem::Specification.new do |s|
   s.add_dependency('streamio-ffmpeg', '~> 0.9.0')
   s.add_dependency('language_list', '~> 0.0.3')
   s.add_dependency('imdb', '~> 0.6.8')
+  s.add_dependency('httparty')
+  s.add_dependency('rubyzip', '< 1.0.0')
+  s.add_dependency('libxml-ruby')
 
   s.files       = Dir.glob("lib/**/*") + Dir.glob("gems/**/*") + Dir.glob("bin/**/*") + %w(README.md LICENSE CHANGELOG Gemfile Gemfile.lock)
   s.executables = %w(apple-tv-converter)
