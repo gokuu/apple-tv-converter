@@ -24,6 +24,7 @@ Usage: apple-tv-converter [options] [file]
         --no-subtitles               Don't add subtitles
         --no-metadata                Don't add metadata (implies --no-online-metadata)
         --no-online-metadata         Don't fetch metadata from online services (IMDB or TheTVDB)
+        --no-interactive             Perform all operations without user intervention, using sensible defaults
         --no-cleanup                 Don't cleanup the source files after processing
 
 Other options:

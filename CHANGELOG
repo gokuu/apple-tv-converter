@@ -2,6 +2,7 @@ v0.5.0
 ------
 * Added option for renaming a file to the format recommended by Plex
 * Now fetches metadata for TV show episodes from TheTVDB.com instead of IMDB
+* When fetching metadata by name, and several records are found, the user now has the choice of which to use
 * Correctly set Media Kind metadata tag for both TV show episodes and Movies
 * Some other fixes
 
