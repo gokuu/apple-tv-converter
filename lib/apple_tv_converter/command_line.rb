@@ -53,6 +53,8 @@ module AppleTvConverter
 
           opts.on('-l', '--languages eng,por,...', Array, "Only keep audio and subtitles in the specified languages") do |languages|
             options.languages.push *languages
+            # If filtering by languages, always include the undetermined language
+            options.languages.push 'und' unless options.languages.include?('und')
           end
 
           opts.on('-d', '--dir DIRECTORY', 'Process all files in DIRECTORY recursively') do |dir|
