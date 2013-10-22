@@ -1,4 +1,8 @@
-v0.5.0
+v0.5.2
+------
+* Set sort metadata fields for TV Show episodes
+
+v0.5.1
 ------
 * Added option for renaming a file to the format recommended by Plex
 * Now fetches metadata for TV show episodes from TheTVDB.com instead of IMDB
