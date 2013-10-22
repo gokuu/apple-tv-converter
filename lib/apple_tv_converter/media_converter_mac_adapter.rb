@@ -60,6 +60,13 @@ module AppleTvConverter
         metadata['TV Network'] ||= media.tvdb_movie[:show][:series]['Network']
         metadata['Screenwriters'] = media.tvdb_movie_data('Writer').gsub(/(?:^\|)|(?:\|$)/, '').split('|').join(', ') if media.tvdb_movie_data('Writer')
 
+        # Set Sort metadata fields for iOS 5
+        metadata['Sort Name'] = media.name
+        metadata['Sort Album'] = media.show
+        metadata['Sort Album Artist'] = media.show
+        metadata['Sort Composer'] = media.show
+        metadata['Sort Show'] = "#{media.show} Season #{media.season.to_s.rjust(2, '0')}"
+
         if media.imdb_movie
           # Fallback to IMDB data if present
           metadata['Genre'] ||= media.imdb_movie.genres.first if media.imdb_movie.genres && media.imdb_movie.genres.any?
