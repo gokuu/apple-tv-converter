@@ -74,7 +74,10 @@ module AppleTvConverter
         end
 
         return {
-          :episode => show_data[:episodes].detect { |ep| ep['SeasonNumber'].to_i == media.season.to_i && ep['EpisodeNumber'].to_i == media.number.to_i },
+          :episode => show_data[:episodes].detect do |ep|
+            # For season 1, check the absolute number first (for cartoons, etc.), and then check the usual season/episode combo
+            (media.season.to_i == 1 && ep['absolute_number'].to_i == media.number.to_i) || (ep['SeasonNumber'].to_i == media.season.to_i && ep['EpisodeNumber'].to_i == media.number.to_i)
+          end,
           :show => show_data
         }
       end
