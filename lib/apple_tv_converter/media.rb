@@ -116,7 +116,7 @@ module AppleTvConverter
 
     def needs_audio_conversion? ; return ffmpeg_data.audio_codec !~ /(?:aac)/i ; end
 
-    def needs_video_conversion? ; return ffmpeg_data.video_codec !~ /(?:.*?h264|^mpeg4).*/i || ffmpeg_data.video_codec =~ /.*(?:xvid|divx).*/i ; end
+    def needs_video_conversion? ; return ffmpeg_data.video_codec !~ /(?:.*?h264|^mpeg4).*/i || ffmpeg_data.video_codec =~ /.*(?:xvid|divx).*/i || ffmpeg_data.video_stream =~ /h264.*?yuv420p10le/i ; end
 
     def needs_subtitles_conversion? ; return ffmpeg_data.subtitle_streams.any? ; end
 
