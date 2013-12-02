@@ -53,9 +53,11 @@ module AppleTvConverter
     def data_file ; @data_file ||= File.join(base_location, '.apple-tv-converter.data') ; end
     def has_data_file? ; File.exists?(data_file) ; end
 
+    def episode_number_padding ; @episode_number_padding ||= 2 ; end
+
     def plex_format_filename
       filename = if is_tv_show_episode?
-        %Q[#{show} - s#{season.to_s.rjust(2, '0')}e#{number.to_s.rjust(2, '0')}#{"-e#{last_number.to_s.rjust(2, '0')}" if last_number}#{" - #{episode_title.gsub(/\\|\//, '-').gsub(/\:/, '.').gsub(/&amp;/, '&').strip}" if !episode_title.nil? && !episode_title.blank?}.mp4]
+        %Q[#{show} - s#{season.to_s.rjust(2, '0')}e#{number.to_s.rjust(episode_number_padding, '0')}#{"-e#{last_number.to_s.rjust(episode_number_padding, '0')}" if last_number}#{" - #{episode_title.gsub(/\\|\//, '-').gsub(/\:/, '.').gsub(/&amp;/, '&').strip}" if !episode_title.nil? && !episode_title.blank?}.mp4]
       else
         "#{show} (#{release_date || imdb_movie.year}).mp4"
       end
@@ -180,6 +182,7 @@ module AppleTvConverter
             data = YAML.load_file(data_file)
             self.tvdb_id = data[:tvdb_id] if data.has_key?(:tvdb_id)
             self.imdb_id = data[:imdb_id] if data.has_key?(:imdb_id)
+            @episode_number_padding = data[:episode_number_padding] if data.has_key?(:episode_number_padding)
           end
         rescue => e
           ap ['e', e]
