@@ -117,8 +117,20 @@ module AppleTvConverter
 
         # If the file has more than one audio track, map all tracks but subtitles when transcoding
         if media.audio_streams.length > 0
+          # Check whether to filter audio tracks (ie, we have at least one of the languages we're filtering)
+          filter_by_language = false
+
+          if languages.any?
+            media.streams.each do |stream|
+              if stream.type == :audio && languages.include?(stream.language ? stream.language.to_sym : stream.language)
+                filter_by_language = true
+                break
+              end
+            end
+          end
+
           media.streams.each do |stream|
-            options[:map] << " -map #{stream.input_number}:#{stream.stream_number}" if stream.type == :video || (stream.type == :audio && (languages.empty? || languages.include?(stream.language ? stream.language.to_sym : stream.language)))
+            options[:map] << " -map #{stream.input_number}:#{stream.stream_number}" if stream.type == :video || (stream.type == :audio && (!filter_by_language || languages.include?(stream.language ? stream.language.to_sym : stream.language)))
           end
         end
 
