@@ -4,6 +4,7 @@ module AppleTvConverter
     attr_accessor :imdb_movie, :imdb_id, :imdb_episode_id
     attr_accessor :tvdb_movie
     attr_accessor :network, :tvdb_id, :tvdb_season_id, :tvdb_episode_id, :first_air_date, :release_date, :episode_title
+    attr_accessor :use_absolute_episode_numbering, :episode_number_padding
     attr_reader :original_filename
 
     def self.subtitle_extensions ; ['srt', 'sub', 'ssa', 'ass'] ; end
@@ -53,11 +54,12 @@ module AppleTvConverter
     def data_file ; @data_file ||= File.join(base_location, '.apple-tv-converter.data') ; end
     def has_data_file? ; File.exists?(data_file) ; end
 
-    def episode_number_padding ; @episode_number_padding ||= 2 ; end
+    def tvdb_season_number ; @tvdb_season_number ||= media.tvdb_movie_data(@use_absolute_episode_numbering ? '1' : 'SeasonNumber') rescue nil ; end
+    def tvdb_episode_number ; @tvdb_episode_number ||= media.tvdb_movie_data(@use_absolute_episode_numbering ? 'absolute_number' : 'EpisodeNumber') rescue nil ; end
 
     def plex_format_filename
       filename = if is_tv_show_episode?
-        %Q[#{show} - s#{season.to_s.rjust(2, '0')}e#{number.to_s.rjust(episode_number_padding, '0')}#{"-e#{last_number.to_s.rjust(episode_number_padding, '0')}" if last_number}#{" - #{episode_title.gsub(/\\|\//, '-').gsub(/\:/, '.').gsub(/&amp;/, '&').strip}" if !episode_title.nil? && !episode_title.blank?}.mp4]
+        %Q[#{show} - s#{season.to_s.rjust(2, '0')}e#{number.to_s.rjust(episode_number_padding || 2, '0')}#{"-e#{last_number.to_s.rjust(episode_number_padding || 2, '0')}" if last_number}#{" - #{episode_title.gsub(/\\|\//, '-').gsub(/\:/, '.').gsub(/&amp;/, '&').strip}" if !episode_title.nil? && !episode_title.blank?}.mp4]
       else
         "#{show} (#{release_date || imdb_movie.year}).mp4"
       end
@@ -87,7 +89,7 @@ module AppleTvConverter
 
     def quality=(value) ; @quality = value ; end
 
-    def name ; %Q[#{show}#{" S#{season.to_s.rjust(2, '0')}E#{number.to_s.rjust(2, '0')}" if is_tv_show_episode?}] ; end
+    def name ; %Q[#{show}#{" S#{season.to_s.rjust(2, '0')}E#{number.to_s.rjust(episode_number_padding || 2, '0')}" if is_tv_show_episode?}] ; end
 
     def is_tv_show_episode? ; !season.nil? && !number.nil? ; end
 
@@ -158,6 +160,8 @@ module AppleTvConverter
 
       data[:tvdb_id] = self.tvdb_id if self.tvdb_id
       data[:imdb_id] = self.imdb_id if self.imdb_id
+      data[:episode_number_padding] = self.episode_number_padding if self.episode_number_padding
+      data[:use_absolute_episode_numbering] = self.use_absolute_episode_numbering if self.use_absolute_episode_numbering
 
       if self.is_tv_show_episode?
         episode_data = {}
@@ -183,6 +187,7 @@ module AppleTvConverter
             self.tvdb_id = data[:tvdb_id] if data.has_key?(:tvdb_id)
             self.imdb_id = data[:imdb_id] if data.has_key?(:imdb_id)
             @episode_number_padding = data[:episode_number_padding] if data.has_key?(:episode_number_padding)
+            @use_absolute_episode_numbering = data[:use_absolute_episode_numbering] if data.has_key?(:use_absolute_episode_numbering)
           end
         rescue => e
           ap ['e', e]

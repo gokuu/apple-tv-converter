@@ -41,6 +41,8 @@ module AppleTvConverter
         options.plex_format = false
         options.interactive = true
         options.imdb_id = nil
+        options.use_absolute_numbering = false
+        options.episode_number_padding = nil
         options.languages = []
         options.media = []
 
@@ -109,6 +111,17 @@ module AppleTvConverter
 
           opts.on('--no-cleanup', "Don't cleanup the source files after processing") do |c|
             options.skip_cleanup = true
+          end
+
+          opts.separator ""
+          opts.separator "Advanced options:"
+
+          opts.on('--use-absolute-numbering', 'Use absolute numbering for TV Show episodes (specially useful for cartoons)') do |f|
+            options.use_absolute_numbering = true
+          end
+
+          opts.on('--episode-number-padding NUMBER', 'Set the episode number padding length (ie, 3 for 001, 002, etc.)') do |i|
+            options.episode_number_padding = i.to_i
           end
 
           opts.separator ""

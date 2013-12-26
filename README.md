@@ -27,6 +27,11 @@ Usage: apple-tv-converter [options] [file]
         --no-interactive             Perform all operations without user intervention, using sensible defaults
         --no-cleanup                 Don't cleanup the source files after processing
 
+Advanced options:
+        --use-absolute-numbering     Use absolute numbering for TV Show episodes (specially useful for cartoons)
+        --episode-number-padding NUMBER
+                                     Set the episode number padding length (ie, 3 for 001, 002, etc.)
+
 Other options:
     -f, --ffmpeg LOCATION            Set path to ffmpeg binary
 

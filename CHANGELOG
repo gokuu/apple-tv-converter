@@ -1,3 +1,9 @@
+v0.5.3
+------
+* Some transcoding fixes
+* Enable defining a padding length for the episode number via the data file (for example, for shows with more than 100 episodes per season)
+* For season 1 episodes, fetch TheTVDB data first from the absolute episode number (as most anime shows don’t have the concept of seasons), and only after from the 'correct' season and episode number
+
 v0.5.2
 ------
 * Set sort metadata fields for TV Show episodes
