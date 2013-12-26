@@ -53,10 +53,8 @@ module AppleTvConverter
         metadata['Director'] = media.tvdb_movie_data('Director')
         metadata['TV Show'] = media.tvdb_movie[:show][:series]['SeriesName']
         metadata['TV Show'] ||= media.show
-        metadata['TV Season'] = media.tvdb_movie_data('SeasonNumber')
-        metadata['TV Season'] ||= media.season
-        metadata['TV Episode #'] = media.tvdb_movie_data('EpisodeNumber')
-        metadata['TV Episode #'] ||= media.number
+        metadata['TV Season'] = media.tvdb_season_number || media.season
+        metadata['TV Episode #'] = media.tvdb_episode_number || media.number
         metadata['TV Network'] ||= media.tvdb_movie[:show][:series]['Network']
         metadata['Screenwriters'] = media.tvdb_movie_data('Writer').gsub(/(?:^\|)|(?:\|$)/, '').split('|').join(', ') if media.tvdb_movie_data('Writer')
 
@@ -65,7 +63,7 @@ module AppleTvConverter
         metadata['Sort Album'] = media.show
         metadata['Sort Album Artist'] = media.show
         metadata['Sort Composer'] = media.show
-        metadata['Sort Show'] = "#{media.show} Season #{media.season.to_s.rjust(2, '0')}"
+        metadata['Sort Show'] = "#{media.show} Season #{(media.tvdb_season_number || media.season).to_s.rjust(2, '0')}"
 
         if media.imdb_movie
           # Fallback to IMDB data if present
