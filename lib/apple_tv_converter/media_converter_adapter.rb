@@ -104,7 +104,7 @@ module AppleTvConverter
           audio_bitrate ||= media.ffmpeg_data.audio_bitrate || 448
 
           options[:extra] << " -af volume=2.000000" # Increase the volume when transcoding
-          options[:extra] << " -ac #{media.ffmpeg_data.audio_channels} -ar #{media.ffmpeg_data.audio_sample_rate}"
+          options[:extra] << " -ac #{media.ffmpeg_data.audio_channels || media.audio_streams.first.audio_channels} -ar #{media.ffmpeg_data.audio_sample_rate}"
           options[:extra] << " -ab #{[audio_bitrate, (media.ffmpeg_data.audio_bitrate || 1000000)].min}k"
         end
 
