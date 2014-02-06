@@ -1,3 +1,7 @@
+v0.5.5
+------
+* Fixed gem version requirements
+
 v0.5.4
 ------
 * Convert DTS 6.1 audio to 6 channels when transcoding
