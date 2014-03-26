@@ -82,7 +82,7 @@ module AppleTvConverter
           unless media.is_tv_show_episode?
             metadata['Name'] = media.imdb_movie.title.gsub(/"/, '"')
           end
-          metadata['Genre'] = media.imdb_movie.genres.first.gsub(/"/, '"')
+          metadata['Genre'] = media.imdb_movie.genres.first.gsub(/"/, '"') if media.imdb_movie.genres.any?
           metadata['Description'] = media.imdb_movie.plot.gsub(/"/, '"') if media.imdb_movie.plot
           metadata['Release Date'] = media.imdb_movie.year if media.imdb_movie.year
           metadata['Director'] = (media.imdb_movie.director.first || '').gsub(/"/, '"') if media.imdb_movie.director.any?
