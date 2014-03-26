@@ -104,7 +104,7 @@ module AppleTvConverter
           audio_bitrate ||= media.ffmpeg_data.audio_bitrate || 448
 
           options[:extra] << " -af volume=2.000000" # Increase the volume when transcoding
-          options[:extra] << " -ac #{media.ffmpeg_data.audio_channels || media.audio_streams.first.audio_channels} -ar #{media.ffmpeg_data.audio_sample_rate}"
+          options[:extra] << " -ac #{get_transcoded_audio_channels(media)} -ar #{media.ffmpeg_data.audio_sample_rate}"
           options[:extra] << " -ab #{[audio_bitrate, (media.ffmpeg_data.audio_bitrate || 1000000)].min}k"
         end
 
@@ -324,6 +324,14 @@ module AppleTvConverter
         options << " -acodec #{media.needs_audio_conversion? ? 'libfaac' : 'copy'}"
 
         options
+      end
+
+      def get_transcoded_audio_channels(media)
+        audio_channels = media.ffmpeg_data.audio_channels || media.audio_streams.first.audio_channels
+        # Fix for "[libfaac @ 0x7ff7bc0e6e00] Specified channel layout '2.1' is not supported" error
+        audio_channels = 4 if audio_channels == 3
+
+        audio_channels
       end
   end
 end
