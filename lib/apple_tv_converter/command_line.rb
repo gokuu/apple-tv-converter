@@ -205,6 +205,8 @@ module AppleTvConverter
             return e
           rescue => exc
             puts "Couldn't parse filename, skipping: #{File.basename(file)}"
+            puts exc.respond_to? :message ? exc.message : exc
+
             return nil
           end
         rescue Errno::ENOENT
