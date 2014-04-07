@@ -90,6 +90,7 @@ module AppleTvConverter
         # Load IMDB id from options
         media.imdb_id ||= @options.imdb_id
 
+        media.season = @options.season if @options.season
         media.use_absolute_episode_numbering = @options.use_absolute_numbering
         media.episode_number_padding = @options.episode_number_padding if @options.episode_number_padding
       end

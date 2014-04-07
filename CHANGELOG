@@ -1,3 +1,7 @@
+master
+------
+* Add "--season" option
+
 v0.5.5
 ------
 * Fixed gem version requirements
