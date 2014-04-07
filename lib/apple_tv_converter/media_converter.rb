@@ -24,11 +24,19 @@ module AppleTvConverter
         puts "* Name: #{media.show}"
         puts "* Genre: #{media.genre}"
       end
+
       if !@options.skip_online_metadata
         if media.imdb_id
           puts "* IMDB ID: #{media.imdb_id}"
         elsif !@options.skip_metadata
           puts "* IMDB ID: Unknown yet"
+        end
+        if media.is_tv_show_episode?
+          if media.tvdb_id
+            puts "* TheTVDB ID: #{media.tvdb_id}"
+          elsif !@options.skip_metadata
+            puts "* TheTVDB ID: Unknown yet"
+          end
         end
       end
 
@@ -72,6 +80,7 @@ module AppleTvConverter
 
         unless @options.skip_metadata || @options.skip_online_metadata
           media.imdb_id ||= @options.imdb_id
+          media.tvdb_id ||= @options.tvdb_id
           @adapter.get_metadata(media)
         end
 
@@ -89,6 +98,7 @@ module AppleTvConverter
       def apply_options_to_media!(media)
         # Load IMDB id from options
         media.imdb_id ||= @options.imdb_id
+        media.tvdb_id ||= @options.tvdb_id
 
         media.use_absolute_episode_numbering = @options.use_absolute_numbering
         media.episode_number_padding = @options.episode_number_padding if @options.episode_number_padding
