@@ -204,8 +204,10 @@ module AppleTvConverter
 
             return e
           rescue => exc
+            puts "File.expand_path(file): #{File.expand_path(file)}"
             puts "Couldn't parse filename, skipping: #{File.basename(file)}"
-            puts exc.respond_to? :message ? exc.message : exc
+            puts "Reason: #{exc.respond_to?(:message) ? exc.message : exc}"
+            puts "In: #{exc.backtrace.join("\n    ")}"
 
             return nil
           end
