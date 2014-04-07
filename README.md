@@ -31,6 +31,7 @@ Advanced options:
         --use-absolute-numbering     Use absolute numbering for TV Show episodes (specially useful for cartoons)
         --episode-number-padding NUMBER
                                      Set the episode number padding length (ie, 3 for 001, 002, etc.)
+    -s, --season NUMBER              Set the season number for TV Show in case folder/file naming scheme doesn't contain right season
 
 Other options:
     -f, --ffmpeg LOCATION            Set path to ffmpeg binary
