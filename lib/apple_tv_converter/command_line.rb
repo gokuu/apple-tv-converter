@@ -49,6 +49,7 @@ module AppleTvConverter
         options.languages = []
         options.media = []
         options.season = nil
+        options.episode = nil
 
         opts = OptionParser.new do |opts|
           opts.banner = "Usage: apple-tv-converter [options] [file]\n" +
@@ -146,8 +147,12 @@ module AppleTvConverter
             options.episode_number_padding = i.to_i
           end
 
-          opts.on('-s', '--season NUMBER', 'Set the season number for TV Show in case folder/file naming scheme doesn\'t contain right season') do |i|
+          opts.on('-s', '--season NUMBER', 'Set the season number for TV Shows in case folder/file naming scheme doesn\'t contain right season') do |i|
             options.season = i.to_i
+          end
+
+          opts.on('-e', '--episode NUMBER', 'Set the episode number for TV Shows in case folder/file naming scheme doesn\'t contain right episode number') do |i|
+            options.episode = i.to_i
           end
 
           opts.separator ""

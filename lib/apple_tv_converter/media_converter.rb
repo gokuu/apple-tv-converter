@@ -101,6 +101,7 @@ module AppleTvConverter
         media.tvdb_id ||= @options.tvdb_id
 
         media.season = @options.season if @options.season
+        media.number = @options.episode if @options.episode
         media.use_absolute_episode_numbering = @options.use_absolute_numbering
         media.episode_number_padding = @options.episode_number_padding if @options.episode_number_padding
       end
