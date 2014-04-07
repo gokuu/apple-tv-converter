@@ -175,7 +175,7 @@ module AppleTvConverter
             e = AppleTvConverter::Media.new
 
             # Extract name (check if the folder name is Season XX, and use the parent folder name if it is)
-            test_path = File.basename(File.dirname(file)) =~ /^season\s*\d+/i ? File.dirname(File.dirname(file)) : File.dirname(file)
+            test_path = File.expand_path(File.basename(File.dirname(file)) =~ /^season\s*\d+/i ? File.dirname(File.dirname(file)) : File.dirname(file))
 
             match = test_path.match(/.*\/(.*?)(?:S(\d+))?$/i)
 
