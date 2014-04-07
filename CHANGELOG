@@ -1,6 +1,7 @@
 v0.5.6
 ------
 * Fixed "[libfaac @ 0x7ff7bc0e6e00] Specified channel layout '2.1' is not supported" error
+* Add "--season" option
 
 v0.5.5
 ------
