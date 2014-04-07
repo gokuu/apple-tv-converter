@@ -14,6 +14,8 @@ Now, it also supports automatically downloading subtitles from [opensubtitles.or
 Usage: apple-tv-converter [options] [file]
        [file] must be provided unless the -d (--dir) switch is present.
     -i, --id id                      Set a specific id for fetching metadata from online services
+        --imdb_id id                 Set a specific id for fetching metadata from IMDB
+        --tvdb_id id                 Set a specific id for fetching metadata from TheTVDB
     -l, --languages eng,por,...      Only keep audio and subtitles in the specified languages
     -d, --dir DIRECTORY              Process all files in DIRECTORY recursively
         --itunes                     Add processed file to iTunes library, if it isn't present yet
@@ -31,7 +33,8 @@ Advanced options:
         --use-absolute-numbering     Use absolute numbering for TV Show episodes (specially useful for cartoons)
         --episode-number-padding NUMBER
                                      Set the episode number padding length (ie, 3 for 001, 002, etc.)
-    -s, --season NUMBER              Set the season number for TV Show in case folder/file naming scheme doesn't contain right season
+    -s, --season NUMBER              Set the season number for TV Shows in case folder/file naming scheme doesn't contain right season
+    -e, --episode NUMBER             Set the episode number for TV Shows in case folder/file naming scheme doesn't contain right episode number
 
 Other options:
     -f, --ffmpeg LOCATION            Set path to ffmpeg binary
@@ -78,7 +81,7 @@ For Plex Media Server users, you can pass the command-line option `--plex` to au
 
 ### Other remarks
 
-After conversion, `apple-tv-converter` will create a file named `.apple-tv-converter.data` on the base directory of the file containing some information (IMDB id, TheTVDB id, etc.) that can be useful for subsequent processing).
+After conversion, `apple-tv-converter` will create a file named `.apple-tv-converter.data` on the base directory of the file containing some information (IMDB id, TheTVDB id, etc.) that can be useful for subsequent processing.
 
 ## Thanks
 

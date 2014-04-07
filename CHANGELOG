@@ -1,7 +1,15 @@
+v0.5.7
+------
+* Added "--season" option (thanks @shir)
+* Added "--episode" option
+* Added "--imdb_id" option
+* Added "--tvdb_id" option
+* Updated "--id" option to set both IMDB and TheTVDB ids
+* Fixed #1 Couldn't parse filename
+
 v0.5.6
 ------
-* Fixed "[libfaac @ 0x7ff7bc0e6e00] Specified channel layout '2.1' is not supported" error
-* Add "--season" option
+* Fixed "libfaac: Specified channel layout '2.1' is not supported" error
 
 v0.5.5
 ------
