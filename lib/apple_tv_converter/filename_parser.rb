@@ -38,6 +38,11 @@ module AppleTvConverter
       @format2_match ||= basename.match(/(\d+)x(\d+)(?:(?:_?(?:\1)x(\d+))*)/i)
     end
 
+    def format3_match
+      # /(\d+)_?of_?\d+/i -> 1_of_12, 1of12. Only episode numbers
+      @format3_match ||= basename.match(/(\d+)_?of_?\d+/i)
+    end
+
     def parse_tvshow_name
       test_path = File.expand_path(File.basename(File.dirname(@path)) =~ /^season\s*\d+/i ? File.dirname(File.dirname(@path)) : File.dirname(@path))
       match = test_path.match(/.*\/(.*?)(?:S(\d+))?$/i)
@@ -52,6 +57,7 @@ module AppleTvConverter
     def parse_episode_number
       return format1_match[2].to_i if format1_match
       return format2_match[2].to_i if format2_match
+      return format3_match[1].to_i if format3_match
     end
 
     def parse_last_episode_number

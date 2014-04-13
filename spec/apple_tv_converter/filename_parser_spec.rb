@@ -50,6 +50,12 @@ module AppleTvConverter
       end
     end
 
+    context "if file doesn't contain in any know format" do
+      let(:path) { 'Cool Show/Cool Show.avi' }
+
+      it_behaves_like 'parses values', nil, nil, nil
+    end
+
     context "if file name contains season/episode number in format S01E01" do
       let(:path) { 'Cool Show/Cool Show s01e02.avi' }
 
@@ -86,10 +92,16 @@ module AppleTvConverter
       it_behaves_like 'parses values', 1, 2, 4
     end
 
-    context "if file doesn't contain in any know format" do
-      let(:path) { 'Cool Show/Cool Show.avi' }
+    context "if file name contains episode number in format 1_of_12" do
+      let(:path) { 'Cool Show/Cool Show [1_of_12].avi' }
 
-      it_behaves_like 'parses values', nil, nil, nil
+      it_behaves_like 'parses values', nil, 1, nil
+    end
+
+    context "if file name contains episode number in format 1of12" do
+      let(:path) { 'Cool Show/Cool Show 1of12.avi' }
+
+      it_behaves_like 'parses values', nil, 1, nil
     end
   end
 end
