@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
   s.description = "Converts movies to a format playable on Apple TV. Supporting multiple subtitles."
   s.license = 'MIT'
 
-  s.add_development_dependency("rspec", "~> 2.7")
+  s.add_development_dependency("rspec", "~> 2.14.1")
   s.add_development_dependency("rake", "~> 0.9", ">= 0.9.2")
   s.add_dependency('streamio-ffmpeg', '~> 0.9', '>= 0.9.0')
   s.add_dependency('language_list', '~> 0.0', '>= 0.0.3')

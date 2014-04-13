@@ -199,37 +199,15 @@ module AppleTvConverter
         begin
           return nil unless FFMPEG::Movie.new(file).valid?
 
-          # match
-          # [0] - Full string
-          # [1] - Show name
           begin
             e = AppleTvConverter::Media.new
 
-            # Extract name (check if the folder name is Season XX, and use the parent folder name if it is)
-            test_path = File.expand_path(File.basename(File.dirname(file)) =~ /^season\s*\d+/i ? File.dirname(File.dirname(file)) : File.dirname(file))
+            parser = FilenameParser.new(file)
 
-            match = test_path.match(/.*\/(.*?)(?:S(\d+))?$/i)
-
-            e.show = match[1].strip
-
-            # Extract season and media number
-            match = File.basename(file).match(/.*?S(\d+)E(\d+)(?:(?:[-E]+(\d+))*).*?/i)
-
-            # /.*?S(\d+)E(\d+)(?:(?:[-E]+(\d+))*).*?/ -> S00E01, S00E01(E02)+, S00E01(-E02)+, S00E01(-02)+
-            if match
-              e.season = match[1].to_i
-              e.number = match[2].to_i
-              e.last_number = match[3].to_i if match[3]
-            else
-              match = File.basename(file).match(/(\d+)x(\d+)(?:(?:_?(?:\1)x(\d+))*)/i)
-
-              # /(\d+)x(\d+)(?:(?:_?(?:\1)x(\d+))*)/ -> 0x01, 0x01(_0x02)+ , assuming same season number (0x01_1x02 fails!)
-              if match
-                e.season = match[1].to_i
-                e.number = match[2].to_i
-                e.last_number = match[3].to_i if match[3]
-              end
-            end
+            e.show        = parser.tvshow_name
+            e.season      = parser.season_number
+            e.number      = parser.episode_number
+            e.last_number = parser.last_episode_number
 
             e.original_filename = file
 
