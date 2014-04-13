@@ -155,6 +155,7 @@ end
 
 require 'apple_tv_converter/version'
 require 'apple_tv_converter/io_patch'
+require 'apple_tv_converter/filename_parser'
 require 'apple_tv_converter/command_line'
 require 'apple_tv_converter/media_converter'
 require 'apple_tv_converter/media'
