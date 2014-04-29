@@ -184,10 +184,10 @@ module AppleTvConverter
         begin
           if has_data_file?
             data = YAML.load_file(data_file)
-            self.tvdb_id = data[:tvdb_id] if data.has_key?(:tvdb_id)
-            self.imdb_id = data[:imdb_id] if data.has_key?(:imdb_id)
-            @episode_number_padding = data[:episode_number_padding] if data.has_key?(:episode_number_padding)
-            @use_absolute_episode_numbering = data[:use_absolute_episode_numbering] if data.has_key?(:use_absolute_episode_numbering)
+            self.tvdb_id = data[:tvdb_id] if !self.tvdb_id && data.has_key?(:tvdb_id)
+            self.imdb_id = data[:imdb_id] if !self.imdb_id && data.has_key?(:imdb_id)
+            @episode_number_padding = data[:episode_number_padding] if !@episode_number_padding && data.has_key?(:episode_number_padding)
+            @use_absolute_episode_numbering = data[:use_absolute_episode_numbering] if !@use_absolute_episode_numbering && data.has_key?(:use_absolute_episode_numbering)
           end
         rescue => e
           ap ['e', e]
