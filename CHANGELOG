@@ -1,3 +1,11 @@
+v0.5.9
+------
+* Fixed #5 Command line options now correctly override the data file (thanks @shir)
+
+v0.5.8
+------
+* Refactored the filename parsing into a separate file and added parsing of "X_of_Y" and "X of Y" filenames (thanks @shir for pull request #4)
+
 v0.5.7
 ------
 * Added "--season" option (thanks @shir)
