@@ -104,6 +104,8 @@ module AppleTvConverter
         media.number = @options.episode if @options.episode
         media.use_absolute_episode_numbering = @options.use_absolute_numbering
         media.episode_number_padding = @options.episode_number_padding if @options.episode_number_padding
+        media.movie_width = @options.width if @options.width > 0
+        media.movie_height = @options.height if @options.height > 0
       end
   end
 end

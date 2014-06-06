@@ -14,19 +14,7 @@ module AppleTvConverter
     def original_filename=(value)
       @original_filename = value
 
-      if @original_filename =~ /.*?\.mp4$/
-        Dir[@original_filename.gsub(File.extname(@original_filename), '*')].each do |file|
-          if @original_filename != file && !(Media.subtitle_extensions + Media.ignored_extensions).include?(file.downcase.gsub(/.*\./, ''))
-            @original_filename = file
-            break
-          end
-        end
-      end
-
-      if converted_filename == original_filename && needs_transcoding?
-        @converted_filename = original_filename.gsub(File.extname(original_filename), "_2#{File.extname(original_filename)}")
-        @converted_filename_equals_original_filename = true
-      end
+      check_filename_clashing
 
       load_data_file
 
@@ -120,7 +108,21 @@ module AppleTvConverter
 
     def needs_audio_conversion? ; return ffmpeg_data.audio_codec !~ /(?:aac)/i ; end
 
-    def needs_video_conversion? ; return ffmpeg_data.video_codec !~ /(?:.*?h264|^mpeg4).*/i || ffmpeg_data.video_codec =~ /.*(?:xvid|divx).*/i || ffmpeg_data.video_stream =~ /h264.*?yuv420p10le/i ; end
+    def needs_video_conversion?
+      return [
+        ffmpeg_data.video_codec !~ /(?:.*?h264|^mpeg4).*/i,
+        ffmpeg_data.video_codec =~ /.*(?:xvid|divx).*/i,
+        ffmpeg_data.video_stream =~ /h264.*?yuv420p10le/i,
+        needs_video_resizing?
+      ].any?
+    end
+
+    def needs_video_resizing?
+      return [
+        movie_width > 0 && movie_width != ffmpeg_data.width,
+        movie_height > 0 && movie_height != ffmpeg_data.height
+      ].any?
+    end
 
     def needs_subtitles_conversion? ; return ffmpeg_data.subtitle_streams.any? ; end
 
@@ -131,6 +133,22 @@ module AppleTvConverter
     def movie_file_size ; @movie_file_size ||= File.size(original_filename) ; end
 
     def movie_hash ; @movie_hash ||= AppleTvConverter::MovieHasher.compute_hash(original_filename) ; end
+
+    def movie_width ; @movie_width || 0 ; end
+    def movie_width=(value)
+      @movie_width = value
+      assert_movie_dimensions!
+      check_filename_clashing
+      @movie_width
+    end
+
+    def movie_height ; @movie_height || 0 ; end
+    def movie_height=(value)
+      @movie_height = value
+      assert_movie_dimensions!
+      check_filename_clashing
+      @movie_height
+    end
 
     def tvdb_movie_data(key, default = nil) ;
       return tvdb_movie[:episode][key].gsub(/`/, '') if tvdb_movie && tvdb_movie.has_key?(:episode) && tvdb_movie[:episode].has_key?(key) && !tvdb_movie[:episode][key].blank? rescue default
@@ -191,6 +209,34 @@ module AppleTvConverter
           end
         rescue => e
           ap ['e', e]
+        end
+      end
+
+      def assert_movie_dimensions!
+        if movie_width > 0 && movie_height <= 0
+          @movie_height = ffmpeg_data.height.to_f * (movie_width.to_f / ffmpeg_data.width.to_f)
+          @movie_height -= @movie_height % 2
+          @movie_height = @movie_height.to_i
+        elsif movie_width <= 0 && movie_height > 0
+          @movie_width = ffmpeg_data.width.to_f * (movie_height.to_f / ffmpeg_data.height.to_f)
+          @movie_width -= movie_width % 2
+          @movie_width = @movie_width.to_i
+        end
+      end
+
+      def check_filename_clashing
+        if @original_filename =~ /.*?\.mp4$/
+          Dir[@original_filename.gsub(File.extname(@original_filename), '*')].each do |file|
+            if @original_filename != file && !(Media.subtitle_extensions + Media.ignored_extensions).include?(file.downcase.gsub(/.*\./, ''))
+              @original_filename = file
+              break
+            end
+          end
+        end
+
+        if converted_filename == original_filename && needs_transcoding?
+          @converted_filename = original_filename.gsub(File.extname(original_filename), "_2#{File.extname(original_filename)}")
+          @converted_filename_equals_original_filename = true
         end
       end
   end

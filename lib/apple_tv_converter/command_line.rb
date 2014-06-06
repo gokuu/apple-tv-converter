@@ -50,6 +50,8 @@ module AppleTvConverter
         options.media = []
         options.season = nil
         options.episode = nil
+        options.width = -1
+        options.height = -1
 
         opts = OptionParser.new do |opts|
           opts.banner = "Usage: apple-tv-converter [options] [file]\n" +
@@ -160,6 +162,16 @@ module AppleTvConverter
 
           opts.on('-e', '--episode NUMBER', 'Set the episode number for TV Shows in case folder/file naming scheme doesn\'t contain right episode number') do |i|
             options.episode = i.to_i
+          end
+
+          opts.on('--width NUMBER', 'Resize the video to the specified width. If used with --height, can result in a different aspect ratio') do |i|
+            options.width = i.to_i
+            options.width -= options.width % 2 # Ensure it's always a even number
+          end
+
+          opts.on('--height NUMBER', 'Resize the video to the specified height. If used with --width, can result in a different aspect ratio') do |i|
+            options.height = i.to_i
+            options.height -= options.height % 2 # Ensure it's always a even number
           end
 
           opts.separator ""

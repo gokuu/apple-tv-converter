@@ -91,7 +91,7 @@ module AppleTvConverter
     end
 
     def transcode(media, languages = nil)
-      if media.needs_transcoding?
+      if media.needs_transcoding? || needs_transformation?(media)
         puts "* Transcoding"
 
         options = {}
@@ -103,10 +103,7 @@ module AppleTvConverter
 
         # Better video and audio transcoding quality
         if media.needs_video_conversion?
-          # Ensure divisible by 2 width and height
-          dimensions = "-s #{(media.ffmpeg_data.width % 2 > 0) ? (media.ffmpeg_data.width + 1) : media.ffmpeg_data.width}x#{(media.ffmpeg_data.height % 2 > 0) ? (media.ffmpeg_data.height + 1) : media.ffmpeg_data.height}" if media.ffmpeg_data.width % 2 > 0 || media.ffmpeg_data.height % 2 > 0
-
-          options[:extra] << " #{dimensions} -mbd rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -g 300 -pass 1 -q:v 1 -r 23.98"
+          options[:extra] << " #{get_transcoded_dimensions_options(media)} -mbd rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -g 300 -pass 1 -q:v 1 -r 23.98 -pix_fmt yuv420p"
         end
 
         if media.needs_audio_conversion?
@@ -339,6 +336,10 @@ module AppleTvConverter
         list_files(File.join(File.dirname(media.original_filename), '*.srt')).any?
       end
 
+      def needs_transformation?(media)
+        media.needs_video_resizing?
+      end
+
       def get_transcode_options(media)
         options =  " -vcodec #{media.needs_video_conversion? ? 'libx264' : 'copy'}"
         options << " -acodec #{media.needs_audio_conversion? ? 'libfaac' : 'copy'}"
@@ -352,6 +353,10 @@ module AppleTvConverter
         audio_channels = 4 if audio_channels == 3
 
         audio_channels
+      end
+
+      def get_transcoded_dimensions_options(media)
+        "-s #{(media.movie_width % 2 > 0) ? (media.movie_width + 1) : media.movie_width}x#{(media.movie_height % 2 > 0) ? (media.movie_height + 1) : media.movie_height}" if media.needs_video_resizing?
       end
   end
 end

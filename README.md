@@ -35,6 +35,8 @@ Advanced options:
                                      Set the episode number padding length (ie, 3 for 001, 002, etc.)
     -s, --season NUMBER              Set the season number for TV Shows in case folder/file naming scheme doesn't contain right season
     -e, --episode NUMBER             Set the episode number for TV Shows in case folder/file naming scheme doesn't contain right episode number
+        --width NUMBER               Resize the video to the specified width. If used with --height, can result in a different aspect ratio
+        --height NUMBER              Resize the video to the specified height. If used with --width, can result in a different aspect ratio
 
 Other options:
     -f, --ffmpeg LOCATION            Set path to ffmpeg binary
