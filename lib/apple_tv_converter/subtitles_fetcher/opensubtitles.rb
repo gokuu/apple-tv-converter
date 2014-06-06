@@ -3,8 +3,10 @@ module AppleTvConverter
     class Opensubtitles
       attr_reader :languages, :token
 
-      def initialize(languages)
+      def initialize(languages, username = nil, password = nil)
         @languages = languages
+        @username = username
+        @password = password
         @server = XMLRPC::Client.new(SERVER, PATH, PORT)
         @token = nil
 
@@ -73,8 +75,12 @@ module AppleTvConverter
         media_subtitles.each do |language_code, subtitles|
           subtitles.each do |subtitle|
             block.call :downloading, subtitle
-            download_subtitle(media, subtitle)
-            block.call :downloaded, subtitle
+            result = download_subtitle(media, subtitle)
+            if result == true
+              block.call :downloaded, subtitle
+            else
+              block.call :download_failed, subtitle, result
+            end
           end
         end
       end
@@ -92,7 +98,7 @@ module AppleTvConverter
         def logged_in? ; return !@token.nil? ; end
 
         def login
-          response = make_call("LogIn", '', '', '', USER_AGENT)
+          response = make_call("LogIn", @username || '', @password || '', '', USER_AGENT)
           parse_response! response
 
           @token = response['token'] if response[:success]
@@ -180,6 +186,10 @@ module AppleTvConverter
                 File.open(media.get_new_subtitle_filename(subtitle['SubLanguageID'], subtitle_data['idsubtitlefile']), 'wb') { |file| file.write(unzipped_data) }
               end
             end
+
+            return true
+          else
+            return response['status']
           end
         end
 

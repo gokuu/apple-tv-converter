@@ -19,7 +19,7 @@ Usage: apple-tv-converter [options] [file]
     -l, --languages eng,por,...      Only keep audio and subtitles in the specified languages
     -d, --dir DIRECTORY              Process all files in DIRECTORY recursively
         --itunes                     Add processed file to iTunes library, if it isn't present yet
-        --os                         Download subtitles and infer IMDB ID from opensubtitles.org
+        --os [USERNAME:PASSWORD]     Download subtitles and infer IMDB ID from opensubtitles.org
         --plex                       Rename file(s) to Plex Media Server recommended format
 
         --no-transcoding             Don't transcode video or audio

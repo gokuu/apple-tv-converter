@@ -101,8 +101,15 @@ module AppleTvConverter
             options.add_to_itunes = true
           end
 
-          opts.on('--os', "Download subtitles and infer IMDB ID from opensubtitles.org") do |i|
+          opts.on('--os [USERNAME:PASSWORD]', "Download subtitles and infer IMDB ID from opensubtitles.org") do |username_password|
             options.download_subtitles = true
+            if username_password =~ /^(.*?)\:(.*?)/
+              options.download_subtitles_username = $1 if username_password =~ /^(.+?)\:.+$/
+              options.download_subtitles_password = $1 if username_password =~ /^.+?\:(.+)$/
+            end
+
+            options.download_subtitles_username = nil if options.download_subtitles_username == ''
+            options.download_subtitles_password = nil if options.download_subtitles_password == ''
           end
 
           opts.on('--plex', 'Rename file(s) to Plex Media Server recommended format') do

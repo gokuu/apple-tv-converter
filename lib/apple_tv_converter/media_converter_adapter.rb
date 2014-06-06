@@ -10,7 +10,7 @@ module AppleTvConverter
 
     def search_subtitles(media, languages)
       # Load the subtitles into memory and get IMDB id from them
-      AppleTvConverter::SubtitlesFetcher::Opensubtitles.new(languages) do |fetcher|
+      AppleTvConverter::SubtitlesFetcher::Opensubtitles.new(languages, self.conversion_options.download_subtitles_username, self.conversion_options.download_subtitles_password) do |fetcher|
         fetcher.search_subtitles media do |subtitles|
           media.imdb_id = subtitles.first['IDMovieImdb'] if media.imdb_id.nil? || media.imdb_id.to_s.strip == ''
         end
@@ -18,17 +18,37 @@ module AppleTvConverter
     end
 
     def download_subtitles(media, languages)
-      AppleTvConverter::SubtitlesFetcher::Opensubtitles.new(languages) do |fetcher|
+      AppleTvConverter::SubtitlesFetcher::Opensubtitles.new(languages, self.conversion_options.download_subtitles_username, self.conversion_options.download_subtitles_password) do |fetcher|
         if fetcher.has_found_subtitles?(media)
-          printf "* Downloading subtitles"
-          fetcher.download_subtitles media do |step, subtitles|
+          printf "* Downloading subtitles#{%Q[ using user "#{self.conversion_options.download_subtitles_username}"] unless self.conversion_options.download_subtitles_username.nil?}"
+          status = {
+            :total => 0,
+            :ok => 0,
+            :error => 0
+          }
+
+          fetcher.download_subtitles media do |step, subtitles, message|
             case step
-              when :search        then puts %Q[ (#{subtitles.map { |l, subs| "#{subs.count} #{AppleTvConverter.get_language_name(l)}" }.join(', ') })]
-              when :downloading   then printf "  * Downloading: \##{subtitles['IDSubtitleFile']} (#{AppleTvConverter.get_language_name(subtitles['SubLanguageID'])}) - #{subtitles['SubFileName']}"
-              when :downloaded    then puts " [DONE]"
+              when :search          then puts %Q[ (#{subtitles.map { |l, subs| "#{subs.count} #{AppleTvConverter.get_language_name(l)}" }.join(', ') })]
+              when :downloading
+                status[:total] += 1
+                printf "  * Downloading: \##{subtitles['IDSubtitleFile']} (#{AppleTvConverter.get_language_name(subtitles['SubLanguageID'])}) - #{subtitles['SubFileName']}"
+              when :downloaded      then
+                status[:ok] += 1
+                puts " [DONE]"
+              when :download_failed then
+                status[:error] += 1
+                puts " [ERROR - #{message}]"
             end
           end
-          puts "  * All subtitles downloaded"
+
+          if status[:total] == status[:ok]
+            puts "  * All subtitles downloaded"
+          elsif status[:total] == status[:error]
+            puts "  * Couldn't download any subtitle"
+          else
+            puts "  * Downloaded #{status[:ok]} of #{status[:total]} subtitles"
+          end
         else
           puts "* No subtitles found to download"
         end
