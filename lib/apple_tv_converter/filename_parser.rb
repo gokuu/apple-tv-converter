@@ -29,8 +29,8 @@ module AppleTvConverter
     end
 
     def format1_match
-      # /.*?S(\d+)E(\d+)(?:(?:[-E]+(\d+))*).*?/ -> S00E01, S00E01(E02)+, S00E01(-E02)+, S00E01(-02)+
-      @format1_match ||= basename.match(/.*?S(\d+)E(\d+)(?:(?:[-E]+(\d+))*).*?/i)
+      # /.*?S(\d+)E(\d+)(?:(?:[-E]+(\d+))*).*?/ -> S00E01, S00E01(E02)+, S00E01(-E02)+, S00E01(-02)+, S00 E01( E02)+
+      @format1_match ||= basename.match(/.*?S(\d+)\s*E(\d+)(?:(?:[-E]+(\d+)\s*)*).*?/i)
     end
 
     def format2_match
