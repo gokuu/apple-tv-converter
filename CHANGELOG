@@ -1,3 +1,9 @@
+v0.6.0
+------
+* Added command line option to allow resizing the converted video
+* Enchanced the --os option to allow supplying an username:password combination
+* Other fixes
+
 v0.5.9
 ------
 * Fixed #5 Command line options now correctly override the data file (thanks @shir)
