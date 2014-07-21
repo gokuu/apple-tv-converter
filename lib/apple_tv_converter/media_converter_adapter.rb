@@ -247,7 +247,11 @@ module AppleTvConverter
 
             search.movies[0...20].each_with_index do |item, index|
               puts "  | #{(index + 1).to_s.rjust(search.movies.length.to_s.length)} - #{item.title.strip} (id: #{item.id})"
-              puts "  | #{' '.rjust(search.movies.length.to_s.length)}   AKA: #{item.also_known_as.join(', ').strip}" if item.also_known_as.any?
+              if item.also_known_as.any?
+                akas = item.also_known_as[0...5].each do |aka|
+                  puts "  | #{' '.rjust(search.movies.length.to_s.length)}   AKA: #{(aka.is_a?(Hash) ? aka[:title] : aka).strip}"
+                end
+              end
             end
 
             printf "  |\n  *- What's your choice (1..#{[search.movies.length, 20].min})? "
