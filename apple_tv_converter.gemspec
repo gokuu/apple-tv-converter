@@ -23,6 +23,6 @@ Gem::Specification.new do |s|
   s.add_dependency('rubyzip', '~> 0.9', '>= 0.9.9')
   s.add_dependency('libxml-ruby', '~> 2.7', '>= 2.7.0')
 
-  s.files       = Dir.glob("lib/**/*") + Dir.glob("gems/**/*") + Dir.glob("bin/**/*") + %w(README.md LICENSE CHANGELOG Gemfile Gemfile.lock)
+  s.files       = Dir.glob("lib/**/*") + Dir.glob("gems/**/*") + Dir.glob("bin/**/*") + %w(README.md LICENSE CHANGELOG Gemfile Gemfile.lock VERSION)
   s.executables = %w(apple-tv-converter)
 end
