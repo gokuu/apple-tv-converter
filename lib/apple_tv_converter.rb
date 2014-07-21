@@ -15,6 +15,7 @@ require 'net/http'
 require 'uri'
 require 'base64'
 require 'zlib'
+require 'ruby-tmdb3'
 
 module AppleTvConverter
 
