@@ -83,6 +83,7 @@ module AppleTvConverter
             options.languages.push *languages
             # If filtering by languages, always include the undetermined language
             options.languages.push 'und' unless options.languages.include?('und')
+            options.languages.map!(&:to_sym)
           end
 
           opts.on('-d', '--dir DIRECTORY', 'Process all files in DIRECTORY recursively') do |dir|

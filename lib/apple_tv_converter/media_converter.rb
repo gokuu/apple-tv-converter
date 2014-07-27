@@ -68,7 +68,7 @@ module AppleTvConverter
         end
       end
 
-      if @options.skip_subtitles != true && @options.download_subtitles && media.subtitle_streams.select { |s| @options.languages.include?(s.language.to_s) }.empty? && @adapter.list_files(media.original_filename.gsub(/.{4}$/, '.*srt')).empty?
+      if @options.skip_subtitles != true && @options.download_subtitles && media.subtitle_streams.select { |s| @options.languages.include?(s.language.to_sym) }.empty? && @adapter.list_files(media.original_filename.gsub(/.{4}$/, '.*srt')).empty?
         @adapter.search_subtitles(media, @options.languages)
         @adapter.download_subtitles(media, @options.languages)
       end
