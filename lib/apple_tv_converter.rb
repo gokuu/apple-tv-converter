@@ -114,6 +114,7 @@ module AppleTvConverter
     # ice - Icelandic -> isl
     # ita - Italian
     # jpn - Japanese
+    # jap - Japanese -> jpn
     # kor - Korean
     # lav - Latvian
     # lit - Lithuanian
@@ -140,6 +141,7 @@ module AppleTvConverter
       'gre' => 'ell',
       'ice' => 'isl',
       'rum' => 'ron',
+      'jap' => 'jpn',
       'may' => nil
     }
 
