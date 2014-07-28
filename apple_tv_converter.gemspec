@@ -22,7 +22,7 @@ Gem::Specification.new do |s|
   s.add_dependency('httparty', '~> 0')
   s.add_dependency('rubyzip', '~> 0.9', '>= 0.9.9')
   s.add_dependency('libxml-ruby', '~> 2.7', '>= 2.7.0')
-  s.add_dependency('ruby-tmdb3', '~> 0.3.4', '>= 0.3.4')
+  s.add_dependency('rest-client', '~> 1.7.2', '>= 1.7.2')
 
   s.files       = Dir.glob("lib/**/*") + Dir.glob("gems/**/*") + Dir.glob("bin/**/*") + %w(README.md LICENSE CHANGELOG Gemfile Gemfile.lock VERSION)
   s.executables = %w(apple-tv-converter)

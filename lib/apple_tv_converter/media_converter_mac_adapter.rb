@@ -43,72 +43,29 @@ module AppleTvConverter
     def tag(media)
       metadata = {}
 
-      if media.is_tv_show_episode? && media.tvdb_movie
-        # ap [media.tvdb_movie[:show][:series], media.tvdb_movie[:episode]]
-        metadata['Name'] = media.tvdb_movie_data('EpisodeName')
-        metadata['Name'] ||= "#{media.show} S#{media.season.to_s.rjust(2, '0')}E#{media.number.to_s.rjust(2, '0')}"
-        metadata['Genre'] = media.tvdb_movie[:show][:series]['Genre'].gsub(/(?:^\|)|(?:\|$)/, '').split('|').first rescue nil
-        metadata['Description'] = media.tvdb_movie_data('Overview')
-        metadata['Release Date'] = media.tvdb_movie_data('FirstAired')
-        metadata['Director'] = media.tvdb_movie_data('Director')
-        metadata['TV Show'] = media.tvdb_movie[:show][:series]['SeriesName']
-        metadata['TV Show'] ||= media.show
-        metadata['TV Season'] = media.tvdb_season_number || media.season
-        metadata['TV Episode #'] = media.tvdb_episode_number || media.number
-        metadata['TV Network'] ||= media.tvdb_movie[:show][:series]['Network']
-        metadata['Screenwriters'] = media.tvdb_movie_data('Writer').gsub(/(?:^\|)|(?:\|$)/, '').split('|').join(', ') if media.tvdb_movie_data('Writer')
-
-        # Set Sort metadata fields for iOS 5
-        metadata['Sort Name'] = media.name
-        metadata['Sort Album'] = media.show
-        metadata['Sort Album Artist'] = media.show
-        metadata['Sort Composer'] = media.show
-        metadata['Sort Show'] = "#{media.show} Season #{(media.tvdb_season_number || media.season).to_s.rjust(2, '0')}"
-
-        if media.imdb_movie
-          # Fallback to IMDB data if present
-          metadata['Genre'] ||= media.imdb_movie.genres.first if media.imdb_movie.genres && media.imdb_movie.genres.any?
-          metadata['Description'] ||= media.imdb_movie.plot if media.imdb_movie.plot
-          metadata['Release Date'] ||= media.imdb_movie.year if media.imdb_movie.year > 0
-          metadata['Director'] ||= media.imdb_movie.director.first
-        end
-
-        if File.exists?(media.tvdb_movie_poster)
-          AppleTvConverter.copy media.tvdb_movie_poster, media.artwork_filename
-          metadata['Artwork'] = media.artwork_filename
-        end
-      else
-        if media.imdb_movie
-          unless media.is_tv_show_episode?
-            metadata['Name'] = media.imdb_movie.title.gsub(/"/, '"')
-          end
-          metadata['Genre'] = media.imdb_movie.genres.first.gsub(/"/, '"') if media.imdb_movie.genres.any?
-          metadata['Description'] = media.imdb_movie.plot.gsub(/"/, '"') if media.imdb_movie.plot
-          metadata['Release Date'] = media.imdb_movie.year if media.imdb_movie.year
-          metadata['Director'] = (media.imdb_movie.director.first || '').gsub(/"/, '"') if media.imdb_movie.director.any?
-          metadata['Codirector'] = media.imdb_movie.director[1].gsub(/"/, '"') if media.imdb_movie.director.length > 1
-
-          if media.imdb_movie.poster
-            AppleTvConverter.copy media.imdb_movie.poster, media.artwork_filename
-            metadata['Artwork'] = media.artwork_filename
-          end
-        end
-
-        # Overwrite the name and genre to group the episode correctly
-        if media.is_tv_show_episode?
-          metadata['Name'] = "#{media.show} S#{media.season.to_s.rjust(2, '0')}E#{media.number.to_s.rjust(2, '0')}"
-          # metadata['Genre'] = media.genre
-          metadata['TV Show'] = media.show
-          metadata['TV Season'] = media.season
-          metadata['TV Episode #'] = media.number
-        elsif !media.imdb_movie
-          metadata['Name'] = media.show
-          metadata['Genre'] = media.genre
-        end
-      end
-
+      metadata['Name'] = media.metadata.name
+      metadata['Genre'] = media.metadata.genre
+      metadata['Description'] = media.metadata.description
+      metadata['Release Date'] = media.metadata.release_date
+      metadata['Director'] = media.metadata.director
+      metadata['Screenwriters'] = media.metadata.screenwriters
+      metadata['Artwork'] = media.metadata.artwork
+      metadata['Sort Name'] = media.metadata.sort_name
       metadata['HD Video'] = true if media.hd?
       metadata['Media Kind'] = media.is_tv_show_episode? ? 'TV Show' : 'Movie'
+
+      if media.is_tv_show_episode?
+        metadata['TV Show'] = media.metadata.tv_show
+        metadata['TV Season'] = media.metadata.tv_show_season
+        metadata['TV Episode #'] = media.metadata.tv_show_episode
+        metadata['TV Network'] = media.metadata.tv_network
+
+        metadata['Sort Album'] = media.metadata.sort_album
+        metadata['Sort Album Artist'] = media.metadata.sort_album_artist
+        metadata['Sort Composer'] = media.metadata.sort_composer
+        metadata['Sort TV Show'] = media.metadata.sort_show
+      end
+
 
       metadata = metadata.map do |key, value|
         value.nil? ? nil : %Q[{#{key}: #{value.to_s.gsub(/"/, '\\"')}}]
