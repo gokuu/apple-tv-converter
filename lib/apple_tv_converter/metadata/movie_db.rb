@@ -4,16 +4,15 @@ module AppleTvConverter
       def self.get_metadata(media, interactive = true, language = 'en')
         show_id = nil
 
-        if media.get_metadata_id(:imdb, :show)
+        if media.get_metadata_id(:tmdb, :show)
           # We have an id, assume it for the search
-          show_id = media.get_metadata_id(:imdb, :show)
+          show_id = media.get_metadata_id(:tmdb, :show)
         else
           printf  "* Searching TheMovieDb.org "
 
           # Query the data
           results = search(media)
           if results
-            ap ['results', results]
             puts "[DONE]"
 
             if results[:total_results] > 0
@@ -60,8 +59,6 @@ module AppleTvConverter
 
           if data
             puts "[DONE]"
-            ap data
-            # ap configuration
             media.metadata.name = data[:title]
             media.metadata.genre = data[:genres].first[:name]
             media.metadata.description = data[:overview]
@@ -72,7 +69,7 @@ module AppleTvConverter
             media.metadata.artwork = poster_url(data[:poster_path])
 
             media.release_date = Date.parse(media.metadata.release_date).year
-            media.set_metadata_id :imdb, :show, show_id
+            media.set_metadata_id :tmdb, :show, show_id
 
             return true
           else
