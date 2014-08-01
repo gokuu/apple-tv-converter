@@ -1,3 +1,9 @@
+v0.7.0
+------
+* Added support for fetching metadata from themoviedb.org
+* Performed some reengineering of the metadata services, in order to simplify adding more providers
+* Fixed some bugs
+
 v0.6.2
 ------
 * Added the missing VERSION file
