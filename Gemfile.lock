@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    apple-tv-converter (0.6.2)
+    apple-tv-converter (0.7.0)
       httparty (~> 0)
       imdb (~> 0.6, >= 0.6.8)
       language_list (~> 0.0, >= 0.0.3)
