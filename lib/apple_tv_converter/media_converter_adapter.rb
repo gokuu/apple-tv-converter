@@ -190,8 +190,8 @@ module AppleTvConverter
     end
 
     def get_metadata(media)
-      # has_metadata = Metadata::TvDb.search(media, conversion_options.interactive) if media.is_tv_show_episode?
-      # has_metadata = Metadata::MovieDb.get_metadata(media, conversion_options.interactive) unless media.is_tv_show_episode?
+      has_metadata = Metadata::TvDb.search(media, conversion_options.interactive) if media.is_tv_show_episode?
+      has_metadata = Metadata::MovieDb.get_metadata(media, conversion_options.interactive) unless media.is_tv_show_episode?
       has_metadata ||= Metadata::Imdb.get_metadata(media, conversion_options.interactive)
     end
 
