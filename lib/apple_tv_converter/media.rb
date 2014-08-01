@@ -5,6 +5,7 @@ module AppleTvConverter
     attr_accessor :tvdb_movie
     attr_accessor :network, :tvdb_id, :tvdb_season_id, :tvdb_episode_id, :first_air_date, :release_date, :episode_title
     attr_accessor :use_absolute_episode_numbering, :episode_number_padding
+    attr_accessor :tmdb_id
     attr_reader :original_filename
 
     def self.subtitle_extensions ; ['srt', 'sub', 'ssa', 'ass'] ; end
@@ -196,8 +197,9 @@ module AppleTvConverter
     def update_data_file!
       data = has_data_file? ? YAML.load_file(data_file) : {}
 
-      data[:tvdb_id] = self.tvdb_id if self.tvdb_id
-      data[:imdb_id] = self.imdb_id if self.imdb_id
+      data.delete :tvdb_id
+      data.delete :imdb_id
+      data.delete :tmdb_id
       data[:episode_number_padding] = self.episode_number_padding if self.episode_number_padding
       data[:use_absolute_episode_numbering] = self.use_absolute_episode_numbering if self.use_absolute_episode_numbering
       data[:metadata_id] = @metadata_id
@@ -223,16 +225,21 @@ module AppleTvConverter
         begin
           if has_data_file?
             data = YAML.load_file(data_file)
-            self.tvdb_id = data[:tvdb_id] if !self.tvdb_id && data.has_key?(:tvdb_id)
-            self.imdb_id = data[:imdb_id] if !self.imdb_id && data.has_key?(:imdb_id)
+            self.tvdb_id ||= data[:tvdb_id] if !self.tvdb_id && data.has_key?(:tvdb_id)
+            self.imdb_id ||= data[:imdb_id] if !self.imdb_id && data.has_key?(:imdb_id)
+            self.tmdb_id ||= data[:tmdb_id] if !self.tmdb_id && data.has_key?(:tmdb_id)
             @episode_number_padding = data[:episode_number_padding] if !@episode_number_padding && data.has_key?(:episode_number_padding)
             @use_absolute_episode_numbering = data[:use_absolute_episode_numbering] if !@use_absolute_episode_numbering && data.has_key?(:use_absolute_episode_numbering)
 
             @metadata_id = data[:metadata_id] if data.has_key?(:metadata_id)
-            @metadata_id ||= { :show => {} }
-            @metadata_id[:show][:imdb] ||= self.imdb_id
-            @metadata_id[:show][:tvdb] ||= self.tvdb_id
           end
+
+          @metadata_id ||= { :show => {} }
+          @metadata_id[:show][:imdb] ||= self.imdb_id
+          @metadata_id[:show][:tvdb] ||= self.tvdb_id
+          @metadata_id[:show][:tmdb] ||= self.tmdb_id
+
+          puts @metadata_id
         rescue => e
           ap ['e', e]
         end
