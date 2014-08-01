@@ -28,7 +28,7 @@ module AppleTvConverter
       end
 
       def search_subtitles(media, &block)
-        language_options = languages.map(&:to_s).join(',') if languages.any?
+        language_options = languages.map(&:to_sym).join(',') if languages.any?
         options = []
 
         # Query by movie hash
@@ -142,7 +142,7 @@ module AppleTvConverter
           # Filter by number of discs (1)
           media_subtitles = media_subtitles.select { |s| s['SubSumCD'] == '1' }
           # Filter by language
-          media_subtitles = media_subtitles.select { |s| languages.empty? || languages.include?(s['SubLanguageID']) }
+          media_subtitles = media_subtitles.select { |s| languages.empty? || languages.include?(s['SubLanguageID'].to_sym) }
           # Filter by movie name (unless it's an episode, as the movie name can be the episode's title)
           media_subtitles = media_subtitles.select { |s| s['MatchedBy'] == 'moviehash' || normalize(s['MovieName']) == normalize(media.show) } unless media.is_tv_show_episode?
 
@@ -155,7 +155,7 @@ module AppleTvConverter
           # media_subtitles = exact_match if exact_match.any?
 
           # Group the subtitles by language code
-          media_subtitles = media_subtitles.group_by { |a| a['SubLanguageID'] }
+          media_subtitles = media_subtitles.group_by { |a| a['SubLanguageID'].to_sym }
 
           all_subtitles = Hash[*media_subtitles.flatten(1)]
 

@@ -68,7 +68,7 @@ module AppleTvConverter
         end
       end
 
-      if @options.skip_subtitles != true && @options.download_subtitles && media.subtitle_streams.select { |s| @options.languages.include?(s.language.to_s) }.empty? && @adapter.list_files(media.original_filename.gsub(/.{4}$/, '.*srt')).empty?
+      if @options.skip_subtitles != true && @options.download_subtitles && media.subtitle_streams.select { |s| @options.languages.include?(s.language.to_sym) }.empty? && @adapter.list_files(media.original_filename.gsub(/.{4}$/, '.*srt')).empty?
         @adapter.search_subtitles(media, @options.languages)
         @adapter.download_subtitles(media, @options.languages)
       end
@@ -96,9 +96,14 @@ module AppleTvConverter
     private
 
       def apply_options_to_media!(media)
-        # Load IMDB id from options
+        # Load metadata service id's from options
         media.imdb_id ||= @options.imdb_id
         media.tvdb_id ||= @options.tvdb_id
+        media.tmdb_id ||= @options.tmdb_id
+
+        media.set_metadata_id :imdb, :show, @options.imdb_id if @options.imdb_id
+        media.set_metadata_id :tvdb, :show, @options.tvdb_id if @options.tvdb_id
+        media.set_metadata_id :tmdb, :show, @options.tmdb_id if @options.tmdb_id
 
         media.season = @options.season if @options.season
         media.number = @options.episode if @options.episode

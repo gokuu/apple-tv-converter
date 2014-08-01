@@ -15,6 +15,7 @@ require 'net/http'
 require 'uri'
 require 'base64'
 require 'zlib'
+require 'rest_client'
 
 module AppleTvConverter
 
@@ -113,6 +114,7 @@ module AppleTvConverter
     # ice - Icelandic -> isl
     # ita - Italian
     # jpn - Japanese
+    # jap - Japanese -> jpn
     # kor - Korean
     # lav - Latvian
     # lit - Lithuanian
@@ -139,6 +141,7 @@ module AppleTvConverter
       'gre' => 'ell',
       'ice' => 'isl',
       'rum' => 'ron',
+      'jap' => 'jpn',
       'may' => nil
     }
 
@@ -161,7 +164,10 @@ require 'apple_tv_converter/media_converter'
 require 'apple_tv_converter/media'
 require 'apple_tv_converter/movie_hasher'
 require 'apple_tv_converter/subtitles_fetcher/opensubtitles'
-require 'apple_tv_converter/tv_db_fetcher'
+require 'apple_tv_converter/metadata/info'
+require 'apple_tv_converter/metadata/imdb'
+require 'apple_tv_converter/metadata/tv_db'
+require 'apple_tv_converter/metadata/movie_db'
 require 'apple_tv_converter/media_converter_adapter'
 require 'apple_tv_converter/media_converter_windows_adapter' if RUBY_PLATFORM =~ /(win|w)(32|64)$/
 require 'apple_tv_converter/media_converter_mac_adapter' if RUBY_PLATFORM =~ /(darwin)/

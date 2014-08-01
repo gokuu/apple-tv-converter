@@ -5,6 +5,7 @@ module AppleTvConverter
     attr_accessor :tvdb_movie
     attr_accessor :network, :tvdb_id, :tvdb_season_id, :tvdb_episode_id, :first_air_date, :release_date, :episode_title
     attr_accessor :use_absolute_episode_numbering, :episode_number_padding
+    attr_accessor :tmdb_id
     attr_reader :original_filename
 
     def self.subtitle_extensions ; ['srt', 'sub', 'ssa', 'ass'] ; end
@@ -156,7 +157,7 @@ module AppleTvConverter
     end
 
     def tvdb_movie_poster
-      local_file = AppleTvConverter::TvDbFetcher.get_poster(self)
+      local_file = AppleTvConverter::Metadata::TvDb.get_poster(self)
 
       unless File.exists?(local_file)
         artwork_filename = imdb_movie.poster if imdb_movie && imdb_movie.poster
@@ -167,19 +168,41 @@ module AppleTvConverter
       local_file
     end
 
+    def metadata ; @metadata ||= Metadata::Info.new(self) ; end
+
     def get_new_subtitle_filename(language, subid = nil)
       dir_name = File.dirname(original_filename)
       existing_subtitle_counter = subid.nil? ? Dir[File.join(dir_name, '*.srt')].length : subid
       return File.join(dir_name, File.basename(original_filename).gsub(File.extname(original_filename), ".#{existing_subtitle_counter}.#{language}.srt"))
     end
 
+    def get_metadata_id(service, type)
+      @metadata_id ||= {}
+      @metadata_id[type.to_sym] ||= {}
+      return @metadata_id[type.to_sym][service.to_sym] rescue nil
+    end
+
+    def set_metadata_id(service, type, id)
+      @metadata_id ||= {}
+      @metadata_id[type.to_sym] ||= {}
+      @metadata_id[type.to_sym].store service.to_sym, id.to_s.gsub(/\D+/, '')
+    end
+
+    def set_metadata_id_if_not_set(service, type, id)
+      @metadata_id ||= {}
+      @metadata_id[type.to_sym] ||= {}
+      @metadata_id[type.to_sym].store(service.to_sym, id.to_s.gsub(/\D+/, '')) unless @metadata_id[type.to_sym].has_key?(service.to_sym)
+    end
+
     def update_data_file!
       data = has_data_file? ? YAML.load_file(data_file) : {}
 
-      data[:tvdb_id] = self.tvdb_id if self.tvdb_id
-      data[:imdb_id] = self.imdb_id if self.imdb_id
+      data.delete :tvdb_id
+      data.delete :imdb_id
+      data.delete :tmdb_id
       data[:episode_number_padding] = self.episode_number_padding if self.episode_number_padding
       data[:use_absolute_episode_numbering] = self.use_absolute_episode_numbering if self.use_absolute_episode_numbering
+      data[:metadata_id] = @metadata_id
 
       if self.is_tv_show_episode?
         episode_data = {}
@@ -202,11 +225,21 @@ module AppleTvConverter
         begin
           if has_data_file?
             data = YAML.load_file(data_file)
-            self.tvdb_id = data[:tvdb_id] if !self.tvdb_id && data.has_key?(:tvdb_id)
-            self.imdb_id = data[:imdb_id] if !self.imdb_id && data.has_key?(:imdb_id)
+            self.tvdb_id ||= data[:tvdb_id] if !self.tvdb_id && data.has_key?(:tvdb_id)
+            self.imdb_id ||= data[:imdb_id] if !self.imdb_id && data.has_key?(:imdb_id)
+            self.tmdb_id ||= data[:tmdb_id] if !self.tmdb_id && data.has_key?(:tmdb_id)
             @episode_number_padding = data[:episode_number_padding] if !@episode_number_padding && data.has_key?(:episode_number_padding)
             @use_absolute_episode_numbering = data[:use_absolute_episode_numbering] if !@use_absolute_episode_numbering && data.has_key?(:use_absolute_episode_numbering)
+
+            @metadata_id = data[:metadata_id] if data.has_key?(:metadata_id)
           end
+
+          @metadata_id ||= { :show => {} }
+          @metadata_id[:show][:imdb] ||= self.imdb_id
+          @metadata_id[:show][:tvdb] ||= self.tvdb_id
+          @metadata_id[:show][:tmdb] ||= self.tmdb_id
+
+          puts @metadata_id
         rescue => e
           ap ['e', e]
         end

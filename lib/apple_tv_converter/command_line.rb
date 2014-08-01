@@ -44,6 +44,7 @@ module AppleTvConverter
         options.interactive = true
         options.imdb_id = nil
         options.tvdb_id = nil
+        options.tmdb_id = nil
         options.use_absolute_numbering = false
         options.episode_number_padding = nil
         options.languages = []
@@ -58,31 +59,40 @@ module AppleTvConverter
                         "       [file] must be provided unless the -d (--dir) switch is present.\n"
 
           opts.on('-i', '--id id', "Set a specific id for fetching metadata from online services") do |id|
-            raise ArgumentError.new("Can't supply both --id and --imdb_id or --tvdb_id at the same time!") if id_switch > 0
+            raise ArgumentError.new("Can't supply both --id and --imdb_id, --tvdb_id, or --tmdb_id at the same time!") if id_switch > 0
 
-            id_switch = 3
+            id_switch = 7
             options.imdb_id = id
             options.tvdb_id = id
+            options.tmdb_id = id
           end
 
           opts.on('--imdb_id id', "Set a specific id for fetching metadata from IMDB") do |id|
-            raise ArgumentError.new("Can't supply both --id and --imdb_id or --tvdb_id at the same time!") if id_switch & 1 > 0
+            raise ArgumentError.new("Can't supply both --id and --imdb_id, --tvdb_id, or --tmdb_id at the same time!") if id_switch & 1 > 0
 
             id_switch |= 1
             options.imdb_id = id
           end
 
           opts.on('--tvdb_id id', "Set a specific id for fetching metadata from TheTVDB") do |id|
-            raise ArgumentError.new("Can't supply both --id and --imdb_id or --tvdb_id at the same time!") if id_switch & 2 > 0
+            raise ArgumentError.new("Can't supply both --id and --imdb_id, --tvdb_id, or --tmdb_id at the same time!") if id_switch & 2 > 0
 
             id_switch |= 2
             options.tvdb_id = id
+          end
+
+          opts.on('--tmdb_id id', "Set a specific id for fetching metadata from TheTVDB") do |id|
+            raise ArgumentError.new("Can't supply both --id and --imdb_id, --tvdb_id, or --tmdb_id at the same time!") if id_switch & 4 > 0
+
+            id_switch |= 4
+            options.tmdb_id = id
           end
 
           opts.on('-l', '--languages eng,por,...', Array, "Only keep audio and subtitles in the specified languages") do |languages|
             options.languages.push *languages
             # If filtering by languages, always include the undetermined language
             options.languages.push 'und' unless options.languages.include?('und')
+            options.languages.map!(&:to_sym)
           end
 
           opts.on('-d', '--dir DIRECTORY', 'Process all files in DIRECTORY recursively') do |dir|

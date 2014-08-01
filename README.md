@@ -66,7 +66,8 @@ Common options:
 
 ### Metadata
 
-Metadata can be obtained automatically from IMDB.com(http://www.imdb.com) (for movies) or from TheTVDB.com(http://www.thetvdb.com) (for TV show episodes). The latter also falls back to IMDB for necessary information. Most metadata will be filled, including the file's artwork, so it displays a nice image on iTunes library.
+Metadata can be obtained automatically from themoviedb.org(http://www.themoviedb.org) (for movies) or from TheTVDB.com(http://www.thetvdb.com) (for TV show episodes).
+Both fall back to IMDB.com(http://www.imdb.com) for necessary information. Most metadata will be filled, including the file's artwork, so it displays a nice image on iTunes library.
 
 #### Fallbacks
 
