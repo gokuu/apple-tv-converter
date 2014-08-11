@@ -1,3 +1,9 @@
+v0.7.1
+------
+* Fixed `undefined method 'empty?' for Fixnum` on TVDB fetcher
+* Fixed the poster for TV shows not being correctly set
+* Removed forgotten debug messages
+
 v0.7.0
 ------
 * Added support for fetching metadata from themoviedb.org
