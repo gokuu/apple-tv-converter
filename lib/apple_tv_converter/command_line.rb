@@ -81,7 +81,7 @@ module AppleTvConverter
             options.tvdb_id = id
           end
 
-          opts.on('--tmdb_id id', "Set a specific id for fetching metadata from TheTVDB") do |id|
+          opts.on('--tmdb_id id', "Set a specific id for fetching metadata from TheMovieDB") do |id|
             raise ArgumentError.new("Can't supply both --id and --imdb_id, --tvdb_id, or --tmdb_id at the same time!") if id_switch & 4 > 0
 
             id_switch |= 4

@@ -1,3 +1,7 @@
+v0.7.2
+------
+* Small fix on the command line help
+
 v0.7.1
 ------
 * Fixed `undefined method 'empty?' for Fixnum` on TVDB fetcher
