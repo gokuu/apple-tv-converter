@@ -238,8 +238,6 @@ module AppleTvConverter
           @metadata_id[:show][:imdb] ||= self.imdb_id
           @metadata_id[:show][:tvdb] ||= self.tvdb_id
           @metadata_id[:show][:tmdb] ||= self.tmdb_id
-
-          puts @metadata_id
         rescue => e
           ap ['e', e]
         end

@@ -57,7 +57,7 @@ module AppleTvConverter
               Hash[data.sort]
             end
 
-            puts "[NOT FOUND]" if show_ids.empty?
+            puts "[NOT FOUND]" if show_ids.nil? || show_ids == ''
           end
 
           show_id = data[media.show]
@@ -99,7 +99,7 @@ module AppleTvConverter
             media.metadata.release_date = data[:episode]['FirstAired']
             media.metadata.screenwriters = data[:episode]['Writer'].gsub(/(?:^\|)|(?:\|$)/, '').split('|').join(', ') rescue nil
             media.metadata.director = data[:episode]['Director']
-            media.metadata.artwork = get_poster(media, data)
+            media.metadata.artwork = get_poster(data)
 
             # Update some data in the media
             set_metadata_id_if_not_set(:imdb, :show, data[:show][:series]['IMDB_ID']) rescue nil
@@ -123,8 +123,8 @@ module AppleTvConverter
         return false
       end
 
-      def self.get_poster(media, data = nil)
-        local_file = File.join(AppleTvConverter.data_path, 'cache', 'tvdb', "#{media.tvdb_id}.jpg")
+      def self.get_poster(data)
+        local_file = File.join(AppleTvConverter.data_path, 'cache', 'tvdb', "#{data[:show][:series]['id']}.jpg")
 
         unless File.exists?(local_file)
           artwork_filename = data[:show][:series]['poster'] || ''
