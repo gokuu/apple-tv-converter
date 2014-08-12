@@ -16,6 +16,7 @@ Usage: apple-tv-converter [options] [file]
     -i, --id id                      Set a specific id for fetching metadata from online services
         --imdb_id id                 Set a specific id for fetching metadata from IMDB
         --tvdb_id id                 Set a specific id for fetching metadata from TheTVDB
+        --tmdb_id id                 Set a specific id for fetching metadata from TheMovieDB
     -l, --languages eng,por,...      Only keep audio and subtitles in the specified languages
     -d, --dir DIRECTORY              Process all files in DIRECTORY recursively
         --itunes                     Add processed file to iTunes library, if it isn't present yet
@@ -66,8 +67,8 @@ Common options:
 
 ### Metadata
 
-Metadata can be obtained automatically from themoviedb.org(http://www.themoviedb.org) (for movies) or from TheTVDB.com(http://www.thetvdb.com) (for TV show episodes).
-Both fall back to IMDB.com(http://www.imdb.com) for necessary information. Most metadata will be filled, including the file's artwork, so it displays a nice image on iTunes library.
+Metadata can be obtained automatically from [themoviedb.org](http://www.themoviedb.org) (for movies) or from [TheTVDB.com](http://www.thetvdb.com) (for TV show episodes).
+Both fall back to [IMDB.com](http://www.imdb.com) for necessary information. Most metadata will be filled, including the file's artwork, so it displays a nice image on iTunes library.
 
 #### Fallbacks
 
@@ -84,15 +85,14 @@ For Plex Media Server users, you can pass the command-line option `--plex` to au
 
 ### Other remarks
 
-After conversion, `apple-tv-converter` will create a file named `.apple-tv-converter.data` on the base directory of the file containing some information (IMDB id, TheTVDB id, etc.) that can be useful for subsequent processing.
+After conversion, `apple-tv-converter` will create a file named `.apple-tv-converter.data` on the base directory of the file containing some information (metadata service ids, etc.) that can be useful for subsequent processing.
 
 ## Thanks
 
-**Subtitles service powered by [www.OpenSubtitles.org](http://www.opensubtitles.org)**
-![opensubtitles.org logo](http://static.opensubtitles.org/gfx/logo-transparent.png)
-
-**Movie metadata service powered by [www.imdb.com](http://www.imdb.com)**
-**TV Show metadata service powered by [www.thetvdb.com](http://www.thetvdb.com)**
+* Subtitles service powered by [www.OpenSubtitles.org](http://www.opensubtitles.org)
+* Movie metadata service powered by [themoviedb.org](http://www.themoviedb.org) (**This product uses the TMDb API but is not endorsed or certified by TMDb.**)
+* TV Show metadata service powered by [www.thetvdb.com](http://www.thetvdb.com)
+* Movie and TV show metadata service also powered by [www.imdb.com](http://www.imdb.com)
 
 # TODO
 
