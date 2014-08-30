@@ -28,7 +28,8 @@ module AppleTvConverter
                   puts %Q[  | Several shows found, choose the intended one:]
 
                   results[:results].each_with_index do |item, index|
-                    puts "  | #{(index + 1).to_s.rjust(results[:total_results].to_s.length)} - #{item[:title]} (#{Date.parse(item[:release_date]).year}) (id: #{item[:id]})"
+                    release_year = Date.parse(item[:release_date]).year rescue 'Unknown year'
+                    puts "  | #{(index + 1).to_s.rjust(results[:total_results].to_s.length)} - #{item[:title]} (#{release_year}) (id: #{item[:id]})"
                   end
 
                   printf "  |\n  *- What's your choice (1..#{results[:results].length})? "
