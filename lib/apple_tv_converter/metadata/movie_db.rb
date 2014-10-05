@@ -61,7 +61,7 @@ module AppleTvConverter
           if data
             puts "[DONE]"
             media.metadata.name = data[:title]
-            media.metadata.genre = data[:genres].first[:name]
+            media.metadata.genre = data[:genres].first[:name] if data[:genres].any?
             media.metadata.description = data[:overview]
             media.metadata.release_date = data[:release_date]
             # media.metadata.screenwriters = data[:release_date]
